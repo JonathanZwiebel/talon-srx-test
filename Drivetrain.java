@@ -12,6 +12,7 @@ public class Drivetrain {
 	public static final int DERICA_RIGHT_B = 4;
 	public static final int DRIVE_STICK = 0;
 	public static final int TURN_STICK = 1;
+	public static final double DISTANCE_PER_REV = 20.32;
 	
 	String state;
 	
@@ -54,8 +55,8 @@ public class Drivetrain {
 	public void update() {
 		System.out.println("Drivetrain Update");
 		System.out.println(state);
-		System.out.println("Left: "+ left_master.getEncPosition());
-		System.out.println("Right: "+ right_master.getEncPosition());
+		System.out.println("Left: "+ left_master.getEncPosition() * DISTANCE_PER_REV);
+		System.out.println("Right: "+ right_master.getEncPosition() * DISTANCE_PER_REV);
 		switch(state) {
 		case "Human Drive":
 			double forward = drive_stick.getY();
