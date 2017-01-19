@@ -18,7 +18,7 @@ public class Drivetrain {
 	
 	boolean verbose = false;
 	
-	public double PEAK_VOLTAGE = 5.0f;
+	public double PEAK_VOLTAGE = 8.0f;
 	
 	
 	private enum State {
@@ -70,14 +70,14 @@ public class Drivetrain {
 		right_master.configPeakOutputVoltage(PEAK_VOLTAGE, -PEAK_VOLTAGE);
 		
 		
-		state = State.VELOCITY_TARGET;
+		state = State.HUMAN_DRIVE;
 		
 		switch(state) {
 		case HUMAN_DRIVE:
 			left_master.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 			right_master.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-			left_master.setVoltageRampRate(12.3);
-			right_master.setVoltageRampRate(12.3);
+//			left_master.setVoltageRampRate(12.3);
+//			right_master.setVoltageRampRate(12.3);
 			
 			left_master.enableForwardSoftLimit(false);
 			left_master.enableReverseSoftLimit(false);
@@ -95,21 +95,21 @@ public class Drivetrain {
 			
 			break;
 		case VELOCITY_TARGET:
-			right_master.setPID(0, 0, 0, 0.6, 0, 0, 0);
-			left_master.setPID(0, 0, 0, 0.6, 0, 0, 0);
+			right_master.setPID(3.0, 0, 50.0, 2.122, 0, 0, 0);
+			left_master.setPID(3.0, 0, 50.0, 2.122, 0, 0, 0);
 			left_master.changeControlMode(CANTalon.TalonControlMode.Speed);
 			right_master.changeControlMode(CANTalon.TalonControlMode.Speed);
 			
-			right_master.setSetpoint(-5 * INCHES_TO_TICKS);
-			left_master.setSetpoint(-5 * INCHES_TO_TICKS);
+			right_master.setSetpoint(12 / 10.0f * INCHES_TO_TICKS);
+			left_master.setSetpoint(12 / 10.0f * INCHES_TO_TICKS);
 			break;
 		case FORWARD_DRIVE:
 			right_master.setPID(0.4, 0, 4, 0, 0, 0, 0);
 			left_master.setPID(0.4, 0, 4, 0, 0, 0, 0);
 			left_master.changeControlMode(CANTalon.TalonControlMode.Position);
 			right_master.changeControlMode(CANTalon.TalonControlMode.Position);
-			right_master.setSetpoint(72 * INCHES_TO_TICKS);
-			left_master.setSetpoint(72 * INCHES_TO_TICKS);
+			right_master.setSetpoint(-72 * INCHES_TO_TICKS);
+			left_master.setSetpoint(-72 * INCHES_TO_TICKS);
 			break;
 		case TURN_ANGLE:
 			right_master.setPID(1.6, 0, 0, 0, 0, 0, 0);
@@ -127,11 +127,19 @@ public class Drivetrain {
 	
 	public void update() {
 		System.out.println("Drivetrain Update");
-		System.out.println(state);
-		System.out.println("Left inches: "+ left_master.getPosition() / INCHES_TO_TICKS);
-		System.out.println("Right inches: "+ right_master.getPosition() / INCHES_TO_TICKS);
-		System.out.println("Left speed: " + left_master.getSpeed() / INCHES_TO_TICKS);
-		System.out.println("Right speed: " + right_master.getSpeed() / INCHES_TO_TICKS);
+		//System.out.println(state);
+		//System.out.println("Left inches: "+ left_master.getPosition() / INCHES_TO_TICKS);
+		//System.out.println("Right inches: "+ right_master.getPosition() / INCHES_TO_TICKS);
+		System.out.println("Target: " + 5 * INCHES_TO_TICKS);
+		System.out.println("Left speed: " + left_master.getSpeed());
+		System.out.println("Right speed: " + right_master.getSpeed());
+		System.out.println("Left error: " + left_master.getClosedLoopError());
+		System.out.println("Right error: " + right_master.getClosedLoopError());
+		//System.out.println("Left outputVoltageDrop: " + left_master.getOutputVoltage());
+		//System.out.println("Right outputVoltageDrop: " + right_master.getOutputVoltage());
+
+		//System.out.println("Left percentVBus: " + left_master.getOutputVoltage() / left_master.getBusVoltage());
+		//System.out.println("Right percentVBus: " + right_master.getOutputVoltage() / right_master.getBusVoltage());	
 		
 		if(verbose) {
 			System.out.println("Left currentAmps: " + left_master.getOutputCurrent());
