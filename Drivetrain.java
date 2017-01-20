@@ -1,8 +1,10 @@
 package org.usfirst.frc.team8.robot;
 
 import com.ctre.CANTalon;
+import com.ctre.CANTalon.MotionProfileStatus;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 public class Drivetrain {
@@ -30,6 +32,7 @@ public class Drivetrain {
 		HUMAN_DRIVE,
 		TURN_ANGLE,
 		VELOCITY_TARGET,
+		MOTION_PROFILE,
 		STOP
 	}
 	
@@ -41,6 +44,8 @@ public class Drivetrain {
 	CANTalon right_master;
 	CANTalon right_slave;
 	
+	Notifier notifier;
+	
 	public Drivetrain() {
 		drive_stick = new Joystick(DRIVE_STICK);
 		turn_stick = new Joystick(TURN_STICK);
@@ -48,6 +53,7 @@ public class Drivetrain {
 		left_slave = new CANTalon(DERICA_LEFT_SLAVE);
 		right_master = new CANTalon(DERICA_RIGHT_MASTER);
 		right_slave = new CANTalon(DERICA_RIGHT_SLAVE);
+		notifier = new Notifier(new PeriodicRunnable());
 		table = NetworkTable.getTable("robot_table_2");
 	}
 	
@@ -77,6 +83,10 @@ public class Drivetrain {
 		
 		state = State.VELOCITY_TARGET;
 		
+		left_master.changeMotionControlFramePeriod(5);
+		right_master.changeMotionControlFramePeriod(5);
+		notifier.startPeriodic(0.005);
+		
 		switch(state) {
 		case HUMAN_DRIVE:
 			left_master.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
@@ -105,8 +115,8 @@ public class Drivetrain {
 			left_master.changeControlMode(CANTalon.TalonControlMode.Speed);
 			right_master.changeControlMode(CANTalon.TalonControlMode.Speed);
 			
-			right_master.setSetpoint(18 * INCHES_PER_SECOND_TO_TICKS_PER_SECOND); // -10 needed to match native Talon value
-			left_master.setSetpoint(18 * INCHES_PER_SECOND_TO_TICKS_PER_SECOND); // -10 needed to match native Talon value
+			right_master.setSetpoint(-18 * INCHES_PER_SECOND_TO_TICKS_PER_SECOND); // -10 needed to match native Talon value
+			left_master.setSetpoint(-18 * INCHES_PER_SECOND_TO_TICKS_PER_SECOND); // -10 needed to match native Talon value
 			break;
 		case FORWARD_DRIVE:
 			right_master.setPID(0.4, 0, 4, 0, 0, 0, 0); // Semi-tuned
@@ -124,6 +134,10 @@ public class Drivetrain {
 			right_master.setSetpoint(40 * INCHES_TO_TICKS);
 			left_master.setSetpoint(-40 * INCHES_TO_TICKS);
 			break;
+		case MOTION_PROFILE:
+			right_master.changeControlMode(CANTalon.TalonControlMode.MotionProfile);
+			left_master.changeControlMode(CANTalon.TalonControlMode.MotionProfile);
+			fill1DProfile(DrivetrainMotionProfile.Points, DrivetrainMotionProfile.kNumPoints);
 		default:
 			System.out.println("No open-loop command");
 			break;
@@ -136,7 +150,8 @@ public class Drivetrain {
 		right_slave.enableBrakeMode(true);
 	}
 	
-	public void update() {
+	public void update() {	
+		
 		System.out.println("Drivetrain Update");
 		//System.out.println(state);
 		//System.out.println("Left inches: "+ left_master.getPosition() / INCHES_TO_TICKS);
@@ -153,7 +168,7 @@ public class Drivetrain {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		
+				
 		//System.out.println("Left outputVoltageDrop: " + left_master.getOutputVoltage());
 		//System.out.println("Right outputVoltageDrop: " + right_master.getOutputVoltage());
 
@@ -166,7 +181,7 @@ public class Drivetrain {
 			System.out.println("Left busVoltageDrop: " + left_master.getBusVoltage());
 			System.out.println("Left outputPercent: " + left_master.getOutputVoltage() / left_master.getBusVoltage());
 		}
-		
+				
 		switch(state) {
 		case HUMAN_DRIVE:
 			double forward = drive_stick.getY() * -1;
@@ -196,5 +211,43 @@ public class Drivetrain {
 		left_slave.enableBrakeMode(false);
 		right_master.enableBrakeMode(false);
 		right_slave.enableBrakeMode(false);
+	}
+	
+	public void fill1DProfile(double[][] motion_profile, int count) {
+		CANTalon.TrajectoryPoint point = new CANTalon.TrajectoryPoint();
+		
+		left_master.clearMotionProfileTrajectories();
+		right_master.clearMotionProfileTrajectories();
+		
+		for(int i = 0; i < count; i++) {
+			point.position = motion_profile[i][0];
+			point.velocity = motion_profile[i][1];
+			point.timeDurMs = (int) motion_profile[i][2];
+			point.profileSlotSelect = 0;
+			point.velocityOnly = false;
+
+			if(i == 0) {
+				point.zeroPos = true;
+			}
+			else {
+				point.zeroPos = false;
+			}
+			
+			if(i + 1 == count) {
+				point.isLastPoint = true;
+			}
+			else {
+				point.isLastPoint = false;
+			}
+			left_master.pushMotionProfileTrajectory(point);
+			right_master.pushMotionProfileTrajectory(point);
+		}
+	}
+	
+	class PeriodicRunnable implements java.lang.Runnable {
+		public void run() {
+			left_master.processMotionProfileBuffer();
+			right_master.processMotionProfileBuffer();
+		}
 	}
 }
