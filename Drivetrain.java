@@ -18,7 +18,7 @@ public class Drivetrain {
 	
 	boolean verbose = false;
 	
-	public double PEAK_VOLTAGE = 8.0f;
+	public double PEAK_VOLTAGE = 12.0f;
 	
 	
 	private enum State {
@@ -70,7 +70,7 @@ public class Drivetrain {
 		right_master.configPeakOutputVoltage(PEAK_VOLTAGE, -PEAK_VOLTAGE);
 		
 		
-		state = State.HUMAN_DRIVE;
+		state = State.VELOCITY_TARGET;
 		
 		switch(state) {
 		case HUMAN_DRIVE:
@@ -95,13 +95,13 @@ public class Drivetrain {
 			
 			break;
 		case VELOCITY_TARGET:
-			right_master.setPID(3.0, 0, 50.0, 2.122, 0, 0, 0);
-			left_master.setPID(3.0, 0, 50.0, 2.122, 0, 0, 0);
+			right_master.setPID(5.0, 0, 25.0, 2.122, 0, 0, 0);
+			left_master.setPID(5.0, 0, 25.0, 2.122, 0, 0, 0);
 			left_master.changeControlMode(CANTalon.TalonControlMode.Speed);
 			right_master.changeControlMode(CANTalon.TalonControlMode.Speed);
 			
-			right_master.setSetpoint(12 / 10.0f * INCHES_TO_TICKS);
-			left_master.setSetpoint(12 / 10.0f * INCHES_TO_TICKS);
+			right_master.setSetpoint(24 / 10.0f * INCHES_TO_TICKS);
+			left_master.setSetpoint(24 / 10.0f * INCHES_TO_TICKS);
 			break;
 		case FORWARD_DRIVE:
 			right_master.setPID(0.4, 0, 4, 0, 0, 0, 0);
@@ -123,6 +123,11 @@ public class Drivetrain {
 			System.out.println("No open-loop command");
 			break;
 		}
+		
+		left_master.enableBrakeMode(true);
+		left_slave.enableBrakeMode(true);
+		right_master.enableBrakeMode(true);
+		right_slave.enableBrakeMode(true);
 	}
 	
 	public void update() {
@@ -170,5 +175,12 @@ public class Drivetrain {
 		default:
 			System.out.println("No State");
 		}
+	}
+	
+	public void disable() {
+		left_master.enableBrakeMode(false);
+		left_slave.enableBrakeMode(false);
+		right_master.enableBrakeMode(false);
+		right_slave.enableBrakeMode(false);
 	}
 }
