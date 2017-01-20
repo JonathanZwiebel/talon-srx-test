@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
+// Author: Jonathan Zwiebel
 public class Drivetrain {
 	public static final int DERICA_LEFT_MASTER = 3;
 	public static final int DERICA_LEFT_SLAVE = 2;

@@ -4,6 +4,7 @@ import com.ctre.CANTalon;
 
 import edu.wpi.first.wpilibj.Joystick;
 
+//Author: Jonathan Zwiebel
 public class Intake {
 	public static final int DERICA_MECANUM = 7;
 	public static final int DERICA_STORAGE = 8;

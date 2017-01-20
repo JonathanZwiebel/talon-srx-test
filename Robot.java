@@ -3,6 +3,7 @@ package org.usfirst.frc.team8.robot;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
+//Author: Jonathan Zwiebel
 public class Robot extends IterativeRobot {
 	Drivetrain drivetrain;
 	Intake intake;
