@@ -1,16 +1,17 @@
 package org.usfirst.frc.team8.robot;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 public class Robot extends IterativeRobot {
 	Drivetrain drivetrain;
 	Intake intake;
+	NetworkTable table;
 	
 	public Robot() {
 		drivetrain = new Drivetrain();
 		intake = new Intake();
+		table = NetworkTable.getTable("robot_table");
 	}
 	
 	@Override
@@ -32,6 +33,12 @@ public class Robot extends IterativeRobot {
 	public void teleopInit() {
 		drivetrain.init();
 		intake.init();
+		try {
+			table.putString("start", "start_val");
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
@@ -39,5 +46,15 @@ public class Robot extends IterativeRobot {
 		drivetrain.update();
 		intake.update();
 	}
+	
+	@Override
+	public void disabledInit() {
+		drivetrain.disable();
+		try {
+			table.putString("end", "end_val");
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}	}
 }
 

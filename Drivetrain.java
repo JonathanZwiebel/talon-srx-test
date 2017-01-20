@@ -2,24 +2,28 @@ package org.usfirst.frc.team8.robot;
 
 import com.ctre.CANTalon;
 
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 public class Drivetrain {
-	public static final int DERICA_LEFT_A = 3;
-	public static final int DERICA_LEFT_B = 2;
-	public static final int DERICA_RIGHT_A = 1;
-	public static final int DERICA_RIGHT_B = 4;
+	public static final int DERICA_LEFT_MASTER = 3;
+	public static final int DERICA_LEFT_SLAVE = 2;
+	public static final int DERICA_RIGHT_MASTER = 1;
+	public static final int DERICA_RIGHT_SLAVE = 4;
 	public static final int DRIVE_STICK = 0;
 	public static final int TURN_STICK = 1;
-	//public static final double DISTANCE_PER_REV = 20.32;
-	public static final double INCHES_TO_TICKS = 1400 / (2 * 3.1415 * 3.5);
-	public static final double INCHES_TO_DEGREES = 42 / 180.0;
+	
+	public static final double NATIVE_UPDATES = 100;														// From documentation
+	public static final double NATIVE_RATE = 1000 / NATIVE_UPDATES;											// Calculated
+	public static final double INCHES_TO_TICKS = 1400 / (2 * 3.1415 * 3.5);									// 3.5 very roughly taken from 7" diameter wheels
+	public static final double INCHES_TO_DEGREES = 42 / 180.0;												// Very roughly estimated
+	public static final double INCHES_PER_SECOND_TO_TICKS_PER_SECOND = INCHES_TO_TICKS / NATIVE_RATE;		// Calculated
 	
 	boolean verbose = false;
+	NetworkTable table;
 	
+	// The maximum voltage that the motors will output in all code execution
 	public double PEAK_VOLTAGE = 12.0f;
-	
 	
 	private enum State {
 		FORWARD_DRIVE,
@@ -40,10 +44,11 @@ public class Drivetrain {
 	public Drivetrain() {
 		drive_stick = new Joystick(DRIVE_STICK);
 		turn_stick = new Joystick(TURN_STICK);
-		left_master = new CANTalon(DERICA_LEFT_A);
-		left_slave = new CANTalon(DERICA_LEFT_B);
-		right_master = new CANTalon(DERICA_RIGHT_A);
-		right_slave = new CANTalon(DERICA_RIGHT_B);
+		left_master = new CANTalon(DERICA_LEFT_MASTER);
+		left_slave = new CANTalon(DERICA_LEFT_SLAVE);
+		right_master = new CANTalon(DERICA_RIGHT_MASTER);
+		right_slave = new CANTalon(DERICA_RIGHT_SLAVE);
+		table = NetworkTable.getTable("robot_table_2");
 	}
 	
 	public void init() {
@@ -95,25 +100,25 @@ public class Drivetrain {
 			
 			break;
 		case VELOCITY_TARGET:
-			right_master.setPID(5.0, 0, 25.0, 2.122, 0, 0, 0);
-			left_master.setPID(5.0, 0, 25.0, 2.122, 0, 0, 0);
+			right_master.setPID(4.0, 0, 25.0, 2.122, 0, 0, 0); // Tuned via CTRE method (no steady-state)
+			left_master.setPID(4.0, 0, 25.0, 2.122, 0, 0, 0); // Tuned via CTRE method (no steady-state)
 			left_master.changeControlMode(CANTalon.TalonControlMode.Speed);
 			right_master.changeControlMode(CANTalon.TalonControlMode.Speed);
 			
-			right_master.setSetpoint(24 / 10.0f * INCHES_TO_TICKS);
-			left_master.setSetpoint(24 / 10.0f * INCHES_TO_TICKS);
+			right_master.setSetpoint(18 * INCHES_PER_SECOND_TO_TICKS_PER_SECOND); // -10 needed to match native Talon value
+			left_master.setSetpoint(18 * INCHES_PER_SECOND_TO_TICKS_PER_SECOND); // -10 needed to match native Talon value
 			break;
 		case FORWARD_DRIVE:
-			right_master.setPID(0.4, 0, 4, 0, 0, 0, 0);
-			left_master.setPID(0.4, 0, 4, 0, 0, 0, 0);
+			right_master.setPID(0.4, 0, 4, 0, 0, 0, 0); // Semi-tuned
+			left_master.setPID(0.4, 0, 4, 0, 0, 0, 0); // Semi-tuned
 			left_master.changeControlMode(CANTalon.TalonControlMode.Position);
 			right_master.changeControlMode(CANTalon.TalonControlMode.Position);
 			right_master.setSetpoint(-72 * INCHES_TO_TICKS);
 			left_master.setSetpoint(-72 * INCHES_TO_TICKS);
 			break;
 		case TURN_ANGLE:
-			right_master.setPID(1.6, 0, 0, 0, 0, 0, 0);
-			left_master.setPID(1.6, 0, 0, 0, 0, 0, 0);
+			right_master.setPID(1.6, 0, 0, 0, 0, 0, 0); // Semi-tuned
+			left_master.setPID(1.6, 0, 0, 0, 0, 0, 0); // Semi-tuned
 			left_master.changeControlMode(CANTalon.TalonControlMode.Position);
 			right_master.changeControlMode(CANTalon.TalonControlMode.Position);
 			right_master.setSetpoint(40 * INCHES_TO_TICKS);
@@ -124,6 +129,7 @@ public class Drivetrain {
 			break;
 		}
 		
+		// Brake mode on while the robot is in use
 		left_master.enableBrakeMode(true);
 		left_slave.enableBrakeMode(true);
 		right_master.enableBrakeMode(true);
@@ -140,6 +146,14 @@ public class Drivetrain {
 		System.out.println("Right speed: " + right_master.getSpeed());
 		System.out.println("Left error: " + left_master.getClosedLoopError());
 		System.out.println("Right error: " + right_master.getClosedLoopError());
+		
+		try {
+			table.putString("data_table", "" + (5 * INCHES_TO_TICKS) + "," + left_master.getSpeed() + "," + right_master.getSpeed() + "\n");
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		
 		//System.out.println("Left outputVoltageDrop: " + left_master.getOutputVoltage());
 		//System.out.println("Right outputVoltageDrop: " + right_master.getOutputVoltage());
 
