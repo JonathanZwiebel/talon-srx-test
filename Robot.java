@@ -10,9 +10,11 @@ public class Robot extends IterativeRobot {
 	NetworkTable table;
 	
 	public Robot() {
+		System.out.println("Constructing Robot");
 		drivetrain = new Drivetrain();
 		intake = new Intake();
 		table = NetworkTable.getTable("robot_table");
+		System.out.println("Done Constructing Robot");
 	}
 	
 	@Override
@@ -32,6 +34,7 @@ public class Robot extends IterativeRobot {
 
 	@Override
 	public void teleopInit() {
+		System.out.println("Teleop Init");
 		drivetrain.init();
 		intake.init();
 		try {
@@ -40,6 +43,7 @@ public class Robot extends IterativeRobot {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("Done with Teleop Init");
 	}
 	
 	@Override
