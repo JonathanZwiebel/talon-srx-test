@@ -5,20 +5,24 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 //Author: Jonathan Zwiebel
 public class Robot extends IterativeRobot {
-	Drivetrain drivetrain;
+	//Drivetrain drivetrain;
 	Intake intake;
-	NetworkTable table;
+	Drivetrain drivetrain;
+	
+	static NetworkTable table;
 	
 	public Robot() {
 		System.out.println("Constructing Robot");
-		drivetrain = new Drivetrain();
+//		drivetrain = new Drivetrain(table);
 		intake = new Intake();
-		table = NetworkTable.getTable("robot_table");
+//		table = NetworkTable.getTable("robot_table");
 		System.out.println("Done Constructing Robot");
 	}
 	
 	@Override
 	public void robotInit() {
+		Robot.table = NetworkTable.getTable("data_table");
+		drivetrain = new Drivetrain();
 		System.out.println("Robot Init");
 	}
 
@@ -38,7 +42,8 @@ public class Robot extends IterativeRobot {
 		drivetrain.init();
 		intake.init();
 		try {
-			table.putString("start", "start_val");
+			table.putString("start", "true");
+			table.putString("end", "false");
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -56,10 +61,12 @@ public class Robot extends IterativeRobot {
 	public void disabledInit() {
 		drivetrain.disable();
 		try {
-			table.putString("end", "end_val");
+			table.putString("end", "true");
+			table.putString("start", "false");
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-		}	}
+		}	
+	}
 }
 

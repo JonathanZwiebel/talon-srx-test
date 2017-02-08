@@ -30,6 +30,17 @@ public class Intake {
 	}
 	
 	public void update() {
+		float intake_power_boost = (float) intake_stick.getY();
+		float mecanum_power_boost = (float) intake_stick.getX();
+		
+		if(intake_power_boost < 0.02f && intake_power_boost > -0.02f) {
+			intake_power_boost = 0;
+		}
+		
+		if(mecanum_power_boost < 0.02f && mecanum_power_boost > -0.02f) {
+			mecanum_power_boost = 0;
+		}
+		
 		if(intake_stick.getRawButton(MECANUM_OUT_BUTTON)) {
 			mecanum_motor.set(1.0f);
 		}
@@ -37,7 +48,7 @@ public class Intake {
 			mecanum_motor.set(-1.0f);
 		}
 		else {
-			mecanum_motor.set(0.0f);
+			mecanum_motor.set(mecanum_power_boost);
 		}
 		
 		if(intake_stick.getRawButton(STORAGE_OUT_BUTTON)) {
@@ -47,7 +58,7 @@ public class Intake {
 			storage_motor.set(-1.0f);
 		}
 		else {
-			storage_motor.set(0.0f);
+			storage_motor.set(intake_power_boost);
 		}
 	}
 }

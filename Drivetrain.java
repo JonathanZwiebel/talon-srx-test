@@ -24,8 +24,8 @@ public class Drivetrain {
 	public static final double INCHES_PER_SECOND_TO_TICKS_PER_SECOND = INCHES_TO_TICKS / NATIVE_RATE;		// Calculated
 	
 	boolean verbose = false;
-	boolean mp_started = false;
-	NetworkTable table;
+	//boolean mp_started = false;
+//	NetworkTable table;
 	
 	// The maximum voltage that the motors will output in all code execution
 	public double PEAK_VOLTAGE = 5.0f;
@@ -47,12 +47,13 @@ public class Drivetrain {
 	CANTalon right_master;
 	CANTalon right_slave;
 	
-	MotionProfileFollower left_mp_follower;
-	MotionProfileFollower right_mp_follower;
+	//MotionProfileFollower left_mp_follower;
+	//MotionProfileFollower right_mp_follower;
 	
-	Notifier notifier;
+	//Notifier notifier;
 	
 	public Drivetrain() {
+//		this.table = table;
 		System.out.println("Constructing Drivetrain");
 		drive_stick = new Joystick(DRIVE_STICK);
 		turn_stick = new Joystick(TURN_STICK);
@@ -60,17 +61,18 @@ public class Drivetrain {
 		left_slave = new CANTalon(DERICA_LEFT_SLAVE);
 		right_master = new CANTalon(DERICA_RIGHT_MASTER);
 		right_slave = new CANTalon(DERICA_RIGHT_SLAVE);
-		left_mp_follower = new MotionProfileFollower(left_master);
-		right_mp_follower = new MotionProfileFollower(right_master);
-		table = NetworkTable.getTable("robot_table_2");
+		//left_mp_follower = new MotionProfileFollower(left_master);
+		//right_mp_follower = new MotionProfileFollower(right_master);
+//		table = NetworkTable.getTable("robot_table_2");
+//		table.putString("Key", "Value");
 		System.out.println("Done Constructing Drivetrain");
 	}
-	
+
 	public void init() {
-		left_master.reset();
-		left_slave.reset();
-		right_master.reset();
-		right_slave.reset();
+		//left_master.reset();
+		//left_slave.reset();
+		//right_master.reset();
+		//right_slave.reset();
 		
 		System.out.println("Drivetrain Init");
 		//Sets the slave controllers to follow the masters
@@ -95,18 +97,19 @@ public class Drivetrain {
 		
 		left_master.configPeakOutputVoltage(PEAK_VOLTAGE, -PEAK_VOLTAGE);
 		right_master.configPeakOutputVoltage(PEAK_VOLTAGE, -PEAK_VOLTAGE);
+		left_master.configMaxOutputVoltage(PEAK_VOLTAGE);
+		right_master.configMaxOutputVoltage(-PEAK_VOLTAGE);
 		System.out.println("Peak output voltage set");
 		
 		state = State.HUMAN_DRIVE;
 		System.out.println("Drivetrain state set as: " + state.toString());
 		
-		
 		switch(state) {
 		case HUMAN_DRIVE:
 			left_master.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 			right_master.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-			left_master.setVoltageRampRate(24);
-			right_master.setVoltageRampRate(24);
+			left_master.setVoltageRampRate(Integer.MAX_VALUE);
+			right_master.setVoltageRampRate(Integer.MAX_VALUE);
 //			left_master.setForwardSoftLimit(15 * INCHES_TO_TICKS);
 //			left_master.setReverseSoftLimit(-15 * INCHES_TO_TICKS);
 //			right_master.setForwardSoftLimit(15 * INCHES_TO_TICKS);
@@ -120,12 +123,12 @@ public class Drivetrain {
 		case VELOCITY_TARGET:
 			right_master.setPID(4.0, 0, 25.0, 2.122, 0, 0, 0); // Tuned via CTRE method (no steady-state)
 			left_master.setPID(4.0, 0, 25.0, 2.122, 0, 0, 0); // Tuned via CTRE method (no steady-state)
-			
+						
 			left_master.changeControlMode(CANTalon.TalonControlMode.Speed);
 			right_master.changeControlMode(CANTalon.TalonControlMode.Speed);
 			
-			right_master.setSetpoint(12 * INCHES_PER_SECOND_TO_TICKS_PER_SECOND); // -10 needed to match native Talon value
-			left_master.setSetpoint(12 * INCHES_PER_SECOND_TO_TICKS_PER_SECOND); // -10 needed to match native Talon value
+			right_master.setSetpoint(-18 * INCHES_PER_SECOND_TO_TICKS_PER_SECOND); // -10 needed to match native Talon value
+			left_master.setSetpoint(-18 * INCHES_PER_SECOND_TO_TICKS_PER_SECOND); // -10 needed to match native Talon value
 			
 			System.out.println("Velocity target state init finished");
 			break;
@@ -134,8 +137,8 @@ public class Drivetrain {
 			left_master.setPID(0.4, 0, 4, 0, 0, 0, 0); // Semi-tuned
 			left_master.changeControlMode(CANTalon.TalonControlMode.Position);
 			right_master.changeControlMode(CANTalon.TalonControlMode.Position);
-			right_master.setSetpoint(-72 * INCHES_TO_TICKS);
-			left_master.setSetpoint(-72 * INCHES_TO_TICKS);
+			right_master.setSetpoint(72 * INCHES_TO_TICKS);
+			left_master.setSetpoint(72 * INCHES_TO_TICKS);
 			System.out.println("Position target state init finished");
 			break;
 		case ANGLE_TARGET:
@@ -165,20 +168,20 @@ public class Drivetrain {
 	}
 	
 	public void update() {	
-		left_mp_follower.control();
-		right_mp_follower.control();
-		
+		//left_mp_follower.control();
+		//right_mp_follower.control();
 		System.out.println("Drivetrain Update");
-		//System.out.println(state);
-		//System.out.println("Left inches: "+ left_master.getPosition() / INCHES_TO_TICKS);
-		//System.out.println("Right inches: "+ right_master.getPosition() / INCHES_TO_TICKS);
+		System.out.println(state);
+		System.out.println("Left inches: "+ left_master.getPosition() / INCHES_TO_TICKS);
+		System.out.println("Right inches: "+ right_master.getPosition() / INCHES_TO_TICKS);
 		//System.out.println("Left speed: " + left_master.getSpeed());
 		//System.out.println("Right speed: " + right_master.getSpeed());
 		//System.out.println("Left error: " + left_master.getClosedLoopError());
 		//System.out.println("Right error: " + right_master.getClosedLoopError());
-		
 		try {
-			table.putString("data_table", "" + (5 * INCHES_TO_TICKS) + "," + left_master.getSpeed() + "," + right_master.getSpeed() + "\n");
+//			Robot.table.putString("status", ""  + left_master.getPosition()/INCHES_TO_TICKS + "," + right_master.getPosition()/INCHES_TO_TICKS + "," + left_master.getSpeed() + "," + right_master.getSpeed() + "\n");
+//			Robot.table.putString("status", left_master.sens + " << LEFT :: RIGHT >> " + right_master.getTemperature());
+			
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -213,19 +216,19 @@ public class Drivetrain {
 			left_master.set(left);
 			right_master.set(right);
 			break;
-		case MOTION_PROFILE:
-			right_master.changeControlMode(CANTalon.TalonControlMode.MotionProfile);
-			left_master.changeControlMode(CANTalon.TalonControlMode.MotionProfile);
-			CANTalon.SetValueMotionProfile left_set_output = left_mp_follower.getSetValue();
-			CANTalon.SetValueMotionProfile right_set_output = right_mp_follower.getSetValue();
-			left_master.set(left_set_output.value);
-			right_master.set(right_set_output.value);
-			if(!mp_started && drive_stick.getRawButton(1)) {
-				left_mp_follower.startProfile();
-				right_mp_follower.startProfile();
-				mp_started = true;
-			}
-			break;
+//		case MOTION_PROFILE:
+//			right_master.changeControlMode(CANTalon.TalonControlMode.MotionProfile);
+//			left_master.changeControlMode(CANTalon.TalonControlMode.MotionProfile);
+//			CANTalon.SetValueMotionProfile left_set_output = left_mp_follower.getSetValue();
+//			CANTalon.SetValueMotionProfile right_set_output = right_mp_follower.getSetValue();
+//			left_master.set(left_set_output.value);
+//			right_master.set(right_set_output.value);
+//			if(!mp_started && drive_stick.getRawButton(1)) {
+//				left_mp_follower.startProfile();
+//				right_mp_follower.startProfile();
+//				mp_started = true;
+//			}
+//			break;
 			
 		case STOP:
 			left_master.set(0);
@@ -236,11 +239,17 @@ public class Drivetrain {
 	}
 	
 	public void disable() {	
+		left_master.changeControlMode(TalonControlMode.Voltage);
+		right_master.changeControlMode(TalonControlMode.Voltage);
+		
 		left_master.changeControlMode(TalonControlMode.PercentVbus);
+		left_slave.changeControlMode(TalonControlMode.PercentVbus);
 		right_master.changeControlMode(TalonControlMode.PercentVbus);
+		right_slave.changeControlMode(TalonControlMode.PercentVbus);
+
 		
 		left_master.setVoltageRampRate(Integer.MAX_VALUE);
-		right_master.setVoltageRampRate(Integer.MIN_VALUE);
+		right_master.setVoltageRampRate(Integer.MAX_VALUE);
 		
 		left_master.set(0);
 		right_master.set(0);
@@ -255,7 +264,7 @@ public class Drivetrain {
 		right_master.enableForwardSoftLimit(false);
 		right_master.enableReverseSoftLimit(false);
 		
-		left_mp_follower.reset();
-		right_mp_follower.reset();
+		//left_mp_follower.reset();
+		//right_mp_follower.reset();
 	}
 }
