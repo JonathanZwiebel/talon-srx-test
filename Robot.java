@@ -8,21 +8,19 @@ public class Robot extends IterativeRobot {
 	//Drivetrain drivetrain;
 	Intake intake;
 	Drivetrain drivetrain;
+	MasterTalon master_talon;
 	
 	static NetworkTable table;
 	
 	public Robot() {
 		System.out.println("Constructing Robot");
-//		drivetrain = new Drivetrain(table);
-		intake = new Intake();
-//		table = NetworkTable.getTable("robot_table");
+		master_talon = new MasterTalon(7);
 		System.out.println("Done Constructing Robot");
 	}
 	
 	@Override
 	public void robotInit() {
 		Robot.table = NetworkTable.getTable("data_table");
-		drivetrain = new Drivetrain();
 		System.out.println("Robot Init");
 	}
 
@@ -39,34 +37,18 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopInit() {
 		System.out.println("Teleop Init");
-		drivetrain.init();
-		intake.init();
-		try {
-			table.putString("start", "true");
-			table.putString("end", "false");
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
+		master_talon.init();
 		System.out.println("Done with Teleop Init");
 	}
 	
 	@Override
 	public void teleopPeriodic() {
-		drivetrain.update();
-		intake.update();
+		master_talon.update();
 	}
 	
 	@Override
 	public void disabledInit() {
-		drivetrain.disable();
-		try {
-			table.putString("end", "true");
-			table.putString("start", "false");
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}	
+		master_talon.disable();
 	}
 }
 
