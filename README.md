@@ -1,2 +1,4 @@
-# can-test
-A repository for testing CAN Talon features
+# Talon SRX Test
+This repository contains basic FRC Java code for testing features of the CTRE Talon SRX. The purpose of this code is to document and verify features which will be used on the Paly Robotics (FRC team 8) 2017 Steamworks robot. 
+
+This code is being used to control both our 2016 off season Stronghold robot Lady Derica and a test setup. Lady Derica contains two-CIM gearboxes with a single CIMCoder. The final goal with Lady Derica is to test drivetrain-based motion profiles and safe teleoperated control. The test setupt contains a versaplanetary gearbox with an integrated CTRE magnetic encoder with two hall effect sensors connected. The final goal with the test setup is to emulate a manipulator which will be used on our 2017 robot. The goal is to control the motor's output velocity, allow for closed-loop position control, allow for safe operator override, and develop methods to safely test control loops without risk of damaging the mechanism. 
