@@ -14,7 +14,7 @@ public class Robot extends IterativeRobot {
 	
 	public Robot() {
 		System.out.println("Constructing Robot");
-		master_talon = new MasterTalon(7);
+		master_talon = new MasterTalon(1);
 		System.out.println("Done Constructing Robot");
 	}
 	
@@ -37,6 +37,13 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopInit() {
 		System.out.println("Teleop Init");
+		try {
+			table.putString("start", "true");
+			table.putString("end", "false");
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 		master_talon.init();
 		System.out.println("Done with Teleop Init");
 	}
@@ -48,6 +55,13 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void disabledInit() {
+		try {
+			table.putString("end", "true");
+			table.putString("start", "false");
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 		master_talon.disable();
 	}
 }
