@@ -19,7 +19,7 @@ public class MasterTalon {
 	
 	public MasterTalon(int port) {
 		talon = new CANTalon(port);
-		mode = "Velocity";
+		mode = "Motion Magic";
 	}
 	
 	public void init() {
@@ -32,7 +32,6 @@ public class MasterTalon {
 		talon.enableControl();
 		
 		// Limit the Talon output to 12V with a ramping rate of 3 volts
-		talon.configNominalOutputVoltage(-12.0f, +12.0f);
 		talon.configMaxOutputVoltage(12.0f);
 		talon.setVoltageRampRate(Integer.MAX_VALUE);
 		
@@ -47,11 +46,27 @@ public class MasterTalon {
 		
 		switch(mode) {
 		case "Velocity":
-			talon.setPID(0.2f, 0.0f, 0.0f, 0.2441461f, 0, 0, 0);
 			talon.changeControlMode(CANTalon.TalonControlMode.Speed);
+			talon.setPID(0.2f, 0.0f, 2f, 0.2441461f, 0, 0, 0);
+			talon.set(360.0f);
 			break;
 		case "Constant":
 			talon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+			break;
+		case "Position":
+			talon.changeControlMode(CANTalon.TalonControlMode.Position);
+			// F in a control loop is a solid addition
+			talon.setPID(0.3f, 0.002f, 2.0f, 0, 500, 0, 0);
+			talon.configPeakOutputVoltage(+3.0f, -3.0f);
+			talon.set(1);
+			break;
+		case "Motion Magic":
+			talon.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
+			talon.setPID(0.2f, 0.002f, 2.0f, 0.2441461f, 0, 0, 0);
+			talon.configPeakOutputVoltage(+3.0f, -3.0f);
+			talon.setMotionMagicAcceleration(60.0f);
+			talon.setMotionMagicCruiseVelocity(60.0f);
+			talon.set(8000);
 			break;
 		default:
 			System.err.println("Illegal MasterTalon Mode!");
@@ -65,10 +80,13 @@ public class MasterTalon {
 		
 		switch(mode) {
 		case "Velocity":
-			talon.set(360.0f);
 			break;
 		case "Constant":
 			talon.set(0.2f);
+			break;
+		case "Position":
+			break;
+		case "Motion Magic":
 			break;
 		default:
 			System.err.println("Illegal MasterTalon Mode!");
@@ -93,11 +111,11 @@ public class MasterTalon {
 		System.out.println("Speed (RPM): " + talon.getSpeed());
 		System.out.println("Adjusted getEncVelocity: " + talon.getEncVelocity() * 600.0f / 4096);
 		System.out.println("Adjusted getClosedLoopError(): " + talon.getClosedLoopError() * 600.0f / 4096);
-		System.out.println("Percent Error: " + (talon.getClosedLoopError() * 600.0f / 4096) / talon.getSetpoint());
+		System.out.println("Percent Error: " + (talon.getClosedLoopError()) / talon.getSetpoint());
 		System.out.println("Fwd Switch: " + talon.isFwdLimitSwitchClosed() + " | Rev Switch: " + talon.isRevLimitSwitchClosed());
 	}
 	
 	public void logData() {
-		Robot.table.putString("status", System.currentTimeMillis() - start + "," + talon.get() + "\n");
+		Robot.table.putString("status", talon.getOutputVoltage() + "," + talon.getPosition() + "," + talon.getSpeed() + "," + talon.getClosedLoopError() + "\n");
 	}
 }
