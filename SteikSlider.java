@@ -3,36 +3,40 @@ package org.usfirst.frc.team8.robot;
 import com.ctre.CANTalon;
 import com.ctre.CANTalon.StatusFrameRate;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
-// 700 RPM is full power
 
-// Position unit is revolutions
-// Velocity unit is radians/minute? :'( why CTRE?
-
-public class MasterTalon {
+/**
+ * A class to test basic mechanical functionality and tune
+ * loop values for the slider on our 2017 robot
+ * 
+ * @author Jonathan Zwiebel (frc8)
+ *
+ */
+public class SteikSlider {
 	CANTalon talon;
-	CANTalon other_talon;
 	String mode;
-		
-	float start;
+	Joystick stick;
 	
-	public MasterTalon(int port) {
+	public static final float MAX_OUTPUT = 4.0f;
+	
+	public SteikSlider(int port) {
 		talon = new CANTalon(port);
-		mode = "Motion Magic";
+		mode = "Human";
+		stick = new Joystick(0);
 	}
 	
-	public void init() {
-		start = System.currentTimeMillis();
-		
+	public void init() {		
 		// Reset and turn on the Talon 
 		talon.reset();
 		talon.clearStickyFaults();
 		talon.enable();
 		talon.enableControl();
 		
-		// Limit the Talon output to 12V with a ramping rate of 3 volts
-		talon.configMaxOutputVoltage(12.0f);
+		// Limit the Talon output
+		talon.configMaxOutputVoltage(MAX_OUTPUT);
+		talon.configPeakOutputVoltage(MAX_OUTPUT, -MAX_OUTPUT);
 		talon.setVoltageRampRate(Integer.MAX_VALUE);
 
 		// Set up the Talon to read from a relative CTRE mag encoder sensor
@@ -48,29 +52,29 @@ public class MasterTalon {
 		switch(mode) {
 		case "Velocity":
 			talon.changeControlMode(CANTalon.TalonControlMode.Speed);
-			talon.setPID(0.2f, 0.0f, 2f, 0.2441461f, 0, 0, 0);
-			talon.set(360.0f);
+			talon.setPID(0, 0, 0, 0, 0, 0, 0);
+			talon.set(0.0f);
 			break;
 		case "Constant":
 			talon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 			break;
 		case "Position":
 			talon.changeControlMode(CANTalon.TalonControlMode.Position);
-			// F in a control loop is a solid addition
-			talon.setPID(0.6f, 0.004f, 4.0f, 0, 500, 0, 0);
-			talon.configPeakOutputVoltage(+3.0f, -3.0f);
-			talon.set(0);
+			talon.setPID(0, 0, 0, 0, 0, 0, 0);
+			talon.set(0.0f);
+			break;
+		case "Human":
+			talon.changeControlMode(CANTalon.TalonControlMode.Voltage);
 			break;
 		case "Motion Magic":
 			talon.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
-			talon.setPID(0.4f, 0.002f, 8f, 0.2441461f, 1000, 0, 0);
-			talon.configPeakOutputVoltage(+12.0f, -12.0f);
-			talon.setMotionMagicAcceleration(60.0f);
-			talon.setMotionMagicCruiseVelocity(240.0f);
-			talon.set(50);
+			talon.setPID(0, 0, 0, 0, 0, 0, 0);
+			talon.setMotionMagicAcceleration(0.0f);
+			talon.setMotionMagicCruiseVelocity(0.0f);
+			talon.set(0.0f);
 			break;
 		default:
-			System.err.println("Illegal MasterTalon Mode!");
+			System.err.println("Illegal SteikSlider Mode!");
 			System.exit(1);
 		}		
 	}
@@ -83,9 +87,12 @@ public class MasterTalon {
 		case "Velocity":
 			break;
 		case "Constant":
-			talon.set(0.2f);
+			talon.set(0.0f);
 			break;
 		case "Position":
+			break;
+		case "Human":
+			talon.set(stick.getX() * MAX_OUTPUT);
 			break;
 		case "Motion Magic":
 			break;
@@ -111,6 +118,7 @@ public class MasterTalon {
 		System.out.println("getPulseWidthPosition() : " + talon.getPulseWidthPosition());
 		System.out.println("getEncPosition() : " + talon.getEncPosition());
 		System.out.println("getEncVelocity() (Native Unit - Tics per Min): " + talon.getEncVelocity());
+		System.out.println("getOutputVoltage() : " + talon.getOutputVoltage());
 		System.out.println("Speed (RPM): " + talon.getSpeed());
 //		System.out.println("Adjusted getEncVelocity: " + talon.getEncVelocity() * 600.0f / 4096);
 //		System.out.println("Adjusted getClosedLoopError(): " + talon.getClosedLoopError() * 600.0f / 4096);
