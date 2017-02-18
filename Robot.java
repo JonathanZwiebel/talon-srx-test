@@ -1,21 +1,31 @@
 package org.usfirst.frc.team8.robot;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
-//Author: Jonathan Zwiebel
+/**
+ * A robot project used for testing Talon SRX features
+ * 
+ * @author Jonathan Zwiebel
+ *
+ */
 public class Robot extends IterativeRobot {
+	Compressor compressor;
 	SteikDrivetrain steik_drivetrain;
 	SteikSlider steik_slider;
 	SteikClimber steik_climber;
+	SteikSpatula steik_spatula;
 	
 	static NetworkTable table;
 	
 	public Robot() {
 		System.out.println("Constructing Robot");
-		steik_slider = new SteikSlider();
-		steik_drivetrain = new SteikDrivetrain();
-		steik_climber = new SteikClimber();
+		steik_slider = new SteikSlider(this);
+		steik_drivetrain = new SteikDrivetrain(this);
+		steik_climber = new SteikClimber(this);
+		steik_spatula = new SteikSpatula(this);
+		compressor = new Compressor();
 		System.out.println("Done Constructing Robot");
 	}
 	
@@ -48,6 +58,7 @@ public class Robot extends IterativeRobot {
 		steik_slider.init();
 		steik_drivetrain.init();
 		steik_climber.init();
+		steik_spatula.init();
 		System.out.println("Done with Teleop Init");
 	}
 	
@@ -56,6 +67,7 @@ public class Robot extends IterativeRobot {
 		steik_slider.update();
 		steik_drivetrain.update();
 		steik_climber.update();
+		steik_spatula.update();
 	}
 	
 	@Override

@@ -18,11 +18,13 @@ public class SteikDrivetrain {
 	CANTalon right_a;
 	CANTalon right_b;
 	CANTalon right_c; // Master
+	Robot robot;
 	
 	Joystick drive_stick;
 	Joystick turn_stick;
 	
-	public SteikDrivetrain() {
+	public SteikDrivetrain(Robot robot) {
+		this.robot = robot;
 		left_a = new CANTalon(SteikConstants.DRIVETRAIN_LEFT_A_TALON_DEVICE_ID);
 		left_b = new CANTalon(SteikConstants.DRIVETRAIN_LEFT_B_TALON_DEVICE_ID);
 		left_c = new CANTalon(SteikConstants.DRIVETRAIN_LEFT_C_TALON_DEVICE_ID);

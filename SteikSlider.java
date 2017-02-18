@@ -1,11 +1,9 @@
 package org.usfirst.frc.team8.robot;
 
 import com.ctre.CANTalon;
-import com.ctre.CANTalon.StatusFrameRate;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 
 /**
@@ -17,19 +15,28 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
  */
 public class SteikSlider {
 	public static final int RIGHT_POT_POS = 2296;
-	public static final int LEFT_POT_POS = 3341;
-	public static final int CENTER_POT_POS = (RIGHT_POT_POS + LEFT_POT_POS) / 2;
+	public static final int LEFT_POT_POS = 3356;
+	public static final float CENTER_POT_POS = (RIGHT_POT_POS + LEFT_POT_POS) / 2;
+	
+	// Revolutions with 0 as the center
+	public static final float CENTER_SCORING_POS = 0.0f;
+	public static final float LEFT_SCORING_POS = -1.0f;
+	public static final float RIGHT_SCORING_POS = +1.0f;
+	
+	public static final int TOLERANCE = 20;
 	
 	AnalogInput potentiometer;
 	CANTalon talon;
 	String mode;
 	Joystick stick;
+	Robot robot;
 	
-	public SteikSlider() {
+	public SteikSlider(Robot robot) {
+		this.robot = robot;
 		talon = new CANTalon(SteikConstants.SLIDER_TALON_DEVICE_ID);
 		stick = new Joystick(SteikConstants.SLIDER_STICK_PORT);
 		potentiometer = new AnalogInput(SteikConstants.SLIDER_POTENTIOMETER_PORT);
-		mode = "Position";
+		mode = "Human";
 	}
 	
 	public void init() {		
@@ -45,38 +52,33 @@ public class SteikSlider {
 		talon.setVoltageRampRate(Integer.MAX_VALUE);
 
 		// Set up the Talon to read from a relative CTRE mag encoder sensor
-		talon.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Absolute);
-		talon.setPosition(0);
-		talon.setEncPosition(0);
-		talon.setPulseWidthPosition(0);
-		
+		talon.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Absolute);	
+		float current_pot_pos = potentiometer.getValue();
+		float distance_to_center = current_pot_pos - CENTER_POT_POS;
+		float position_in_rev = (distance_to_center / 4096.0f) * 10.0f;
+		talon.setPosition(-position_in_rev); // Negative because pot and encoder are different signage
 		
 		switch(mode) {
 		case "Velocity":
-			talon.changeControlMode(CANTalon.TalonControlMode.Speed);
-			talon.setPID(0, 0, 0, 0, 0, 0, 0);
-			talon.set(0.0f);
+			setVelocityMode();
 			break;
 		case "Constant":
-			talon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+			setConstantMode();
 			break;
-		case "Position":
-			talon.changeControlMode(CANTalon.TalonControlMode.Position);
-			float current_pot_pos = potentiometer.getValue();
-			float distance_to_center = current_pot_pos - CENTER_POT_POS;
-			float to_move = (distance_to_center / 4096.0f) * 10.0f;
-			talon.setPID(0.8, 0.01, 8, 0, 60, 0, 0);
-			talon.set(to_move);
+		case "Center Position":
+			setCenterPositionMode();
+			break;
+		case "Left Position":
+			setLeftPositionMode();
+			break;
+		case "Right Position":
+			setRightPositionMode();
 			break;
 		case "Human":
-			talon.changeControlMode(CANTalon.TalonControlMode.Voltage);
+			setHumanMode();
 			break;
 		case "Motion Magic":
-			talon.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
-			talon.setPID(0, 0, 0, 0, 0, 0, 0);
-			talon.setMotionMagicAcceleration(0.0f);
-			talon.setMotionMagicCruiseVelocity(0.0f);
-			talon.set(0.0f);
+			setMotionMagic();
 			break;
 		default:
 			System.err.println("Illegal SteikSlider Mode!");
@@ -88,16 +90,51 @@ public class SteikSlider {
 		printData();
 		logData();
 		
+		if(stick.getRawButton(2)) {
+			mode = "Human";
+			setHumanMode();
+		}
+		
 		switch(mode) {
 		case "Velocity":
 			break;
 		case "Constant":
 			talon.set(0.0f);
 			break;
-		case "Position":
+		case "Center Position":
+			if(positionLoopDone()) {
+				mode = "Human";
+				setHumanMode();
+			}
+			break;
+		case "Left Position":
+			if(positionLoopDone()) {
+				mode = "Human";
+				setHumanMode();
+			}
+			break;
+		case "Right Position":
+			if(positionLoopDone()) {
+				mode = "Human";
+				setHumanMode();
+			}
 			break;
 		case "Human":
-			talon.set(stick.getX() * SteikConstants.SLIDER_MAX_OUTPUT);
+			if(stick.getRawButton(4)) {
+				mode = "Left Position";
+				setLeftPositionMode();
+			}
+			else if(stick.getRawButton(3)) {
+				mode = "Center Position";
+				setCenterPositionMode();
+			}
+			else if(stick.getRawButton(5)) {
+				mode = "Right Position";
+				setRightPositionMode();
+			}
+			else {
+				talon.set(stick.getX() * SteikConstants.SLIDER_MAX_OUTPUT);
+			}
 			break;
 		case "Motion Magic":
 			break;
@@ -107,10 +144,10 @@ public class SteikSlider {
 		}	
 		
 		// Zero on reverse encoder trigger
-		if(talon.isRevLimitSwitchClosed()) {
-			talon.setPosition(0);
-			talon.setEncPosition(0);
-		}
+//		if(talon.isRevLimitSwitchClosed()) {
+//			talon.setPosition(0);
+//			talon.setEncPosition(0);
+//		}
 	}	
 	
 	public void disable() {
@@ -122,18 +159,64 @@ public class SteikSlider {
 //		System.out.println("Slider getSetpoint(): " + talon.getSetpoint());
 //		System.out.println("Slider getPulseWidthPosition() : " + talon.getPulseWidthPosition());
 //		System.out.println("Slider getEncPosition() : " + talon.getEncPosition());
-		System.out.println("Slider getPositon(): " + talon.getPosition());
+//		System.out.println("Slider getPositon(): " + talon.getPosition());
 //		System.out.println("Slider getEncVelocity() (Native Unit - Tics per Min): " + talon.getEncVelocity());
-		System.out.println("Slider getOutputVoltage() : " + talon.getOutputVoltage());
-		System.out.println("Slider Speed (RPM): " + talon.getSpeed());
+//		System.out.println("Slider getOutputVoltage() : " + talon.getOutputVoltage());
+//		System.out.println("Slider Speed (RPM): " + talon.getSpeed());
 //		System.out.println("Slider Adjusted getEncVelocity: " + talon.getEncVelocity() * 600.0f / 4096);
 //		System.out.println("Slider Adjusted getClosedLoopError(): " + talon.getClosedLoopError() * 600.0f / 4096);
 //		System.out.println("Slider Percent Error: " + (talon.getClosedLoopError()) / talon.getSetpoint());
 //		System.out.println("Slider Fwd Switch: " + talon.isFwdLimitSwitchClosed() + " | Rev Switch: " + talon.isRevLimitSwitchClosed());
-		System.out.println("Slider pot.getValue(): " + potentiometer.getValue());
+//		System.out.println("Slider pot.getValue(): " + potentiometer.getValue());
 	}
 	
 	public void logData() {
 		Robot.table.putString("status", talon.getOutputVoltage() + "," + talon.getPosition() + "," + talon.getSpeed() + "," + talon.getClosedLoopError() + "\n");
+	}
+	
+	public boolean positionLoopDone() {
+		boolean stopped = talon.getSpeed() == 0;
+		boolean at_target = Math.abs(talon.getClosedLoopError()) < TOLERANCE; 
+		
+		return stopped && at_target;
+	}
+	
+	public void setVelocityMode() {
+		talon.changeControlMode(CANTalon.TalonControlMode.Speed);
+		talon.setPID(0, 0, 0, 0, 0, 0, 0);
+		talon.set(0.0f);
+	}
+	
+	public void setConstantMode() {
+		talon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+	}
+	
+	public void setCenterPositionMode() {
+		talon.changeControlMode(CANTalon.TalonControlMode.Position);
+		talon.setPID(0.8, 0.01, 8, 0, 60, 0, 0);
+		talon.set(CENTER_SCORING_POS);
+	}
+	
+	public void setLeftPositionMode() {
+		talon.changeControlMode(CANTalon.TalonControlMode.Position);
+		talon.setPID(0.6, 0.01, 8, 0, 60, 0, 0);
+		talon.set(LEFT_SCORING_POS);
+	}
+	
+	public void setRightPositionMode() {
+		talon.changeControlMode(CANTalon.TalonControlMode.Position);
+		talon.setPID(0.6, 0.01, 8, 0, 60, 0, 0);
+		talon.set(RIGHT_SCORING_POS);
+	}
+	
+	public void setHumanMode() {
+		talon.changeControlMode(CANTalon.TalonControlMode.Voltage);
+	}
+	
+	public void setMotionMagic() {
+		talon.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
+		talon.setPID(0, 0, 0, 0, 0, 0, 0);
+		talon.setMotionMagicAcceleration(0.0f);
+		talon.setMotionMagicCruiseVelocity(0.0f);
 	}
 }

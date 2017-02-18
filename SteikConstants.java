@@ -19,7 +19,7 @@ public class SteikConstants {
 	public static int SLIDER_TALON_DEVICE_ID = 10;
 	public static int SLIDER_POTENTIOMETER_PORT = 3;
 	
-	public static float CLIMBER_MAX_OUTPUT = 4.0f;
+	public static float CLIMBER_MAX_OUTPUT = 12.0f;
 	public static int CLIMBER_TALON_DEVICE_ID = 9;
 	public static int CLIMBER_PDP_PORT = 7; // Unsure
 }
