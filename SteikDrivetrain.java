@@ -69,6 +69,10 @@ public class SteikDrivetrain {
 		left_a.set(left_power);
 		right_c.set(right_power);
 		
+		Robot.dashboardTable.putString("driveSpeedUpdate", left_a.getSpeed() + ", " + right_a.getSpeed());
+		Robot.dashboardTable.putString("leftdriveencoder", left_a.getPosition());
+		Robot.dashboardTable.putString("rightdriveencoder", right_a.getPosition());
+		
 //		System.out.println("Left Drivetrain Voltage: " + left_a.getOutputVoltage());
 //		System.out.println("Right Drivetrain Voltage: " + right_a.getOutputVoltage());
 //		System.out.println("Left Drivetrain Position: " + left_a.getPosition());

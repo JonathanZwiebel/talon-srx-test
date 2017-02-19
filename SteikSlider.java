@@ -143,6 +143,8 @@ public class SteikSlider {
 			System.exit(1);
 		}	
 		
+		Robot.dashboardTable.putString("scalerspeed", talon.getSpeed());
+		
 		// Zero on reverse encoder trigger
 //		if(talon.isRevLimitSwitchClosed()) {
 //			talon.setPosition(0);
@@ -172,6 +174,7 @@ public class SteikSlider {
 	
 	public void logData() {
 		Robot.table.putString("status", talon.getOutputVoltage() + "," + talon.getPosition() + "," + talon.getSpeed() + "," + talon.getClosedLoopError() + "\n");
+		
 	}
 	
 	public boolean positionLoopDone() {

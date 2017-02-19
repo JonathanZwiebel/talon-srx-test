@@ -18,6 +18,7 @@ public class Robot extends IterativeRobot {
 	SteikSpatula steik_spatula;
 	
 	static NetworkTable table;
+	public static NetworkTable dashboardTable;
 	
 	public Robot() {
 		System.out.println("Constructing Robot");
@@ -27,11 +28,13 @@ public class Robot extends IterativeRobot {
 		steik_spatula = new SteikSpatula(this);
 		compressor = new Compressor();
 		System.out.println("Done Constructing Robot");
+		
 	}
 	
 	@Override
 	public void robotInit() {
 		Robot.table = NetworkTable.getTable("data_table");
+		Robot.dashboardTable = NetworkTable.getTable("RobotTable");
 		System.out.println("Robot Init");
 	}
 
