@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
+
+
 /**
  * A robot project used for testing Talon SRX features
  * 
@@ -40,14 +42,15 @@ public class Robot extends IterativeRobot {
 
 	@Override
 	public void autonomousInit() {
-		System.out.println("Autonomous Init");
+		steik_drivetrain.init();
+		steik_drivetrain.autoInit();
 	}
 
 	@Override
 	public void autonomousPeriodic() {
-		System.out.println("Autonomous Periodic");
+		steik_drivetrain.autoUpdate();
 	}
-
+	
 	@Override
 	public void teleopInit() {
 		System.out.println("Teleop Init");

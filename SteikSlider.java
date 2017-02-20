@@ -14,8 +14,8 @@ import edu.wpi.first.wpilibj.Joystick;
  *
  */
 public class SteikSlider {
-	public static final int RIGHT_POT_POS = 2296;
-	public static final int LEFT_POT_POS = 3356;
+	public static final int RIGHT_POT_POS = 2172;
+	public static final int LEFT_POT_POS = 3452;
 	public static final float CENTER_POT_POS = (RIGHT_POT_POS + LEFT_POT_POS) / 2;
 	
 	// Revolutions with 0 as the center
@@ -143,14 +143,20 @@ public class SteikSlider {
 			System.exit(1);
 		}	
 		
-		Robot.dashboardTable.putString("scalerspeed", talon.getSpeed());
-		
+		updateTable();
+
 		// Zero on reverse encoder trigger
 //		if(talon.isRevLimitSwitchClosed()) {
 //			talon.setPosition(0);
 //			talon.setEncPosition(0);
 //		}
 	}	
+	
+	public void updateTable() {		
+		Robot.dashboardTable.putString("sliderDistance", talon.getPosition() + "");
+		Robot.dashboardTable.putString("speed-pos", talon.getSpeed() + "," + talon.getPosition());
+		Robot.dashboardTable.putString("slider-pot", potentiometer.getValue() + "");
+	}
 	
 	public void disable() {
 		talon.enableForwardSoftLimit(false);
@@ -169,7 +175,7 @@ public class SteikSlider {
 //		System.out.println("Slider Adjusted getClosedLoopError(): " + talon.getClosedLoopError() * 600.0f / 4096);
 //		System.out.println("Slider Percent Error: " + (talon.getClosedLoopError()) / talon.getSetpoint());
 //		System.out.println("Slider Fwd Switch: " + talon.isFwdLimitSwitchClosed() + " | Rev Switch: " + talon.isRevLimitSwitchClosed());
-//		System.out.println("Slider pot.getValue(): " + potentiometer.getValue());
+		System.out.println("Slider pot.getValue(): " + potentiometer.getValue());
 	}
 	
 	public void logData() {

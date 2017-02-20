@@ -6,7 +6,7 @@ public class SteikConstants {
 	public static int SLIDER_STICK_PORT = 2;
 	public static int CLIMBER_STICK_PORT = 3; 
 	
-	public static float DRIVETRAIN_MAX_OUTPUT = 5.0f;
+	public static float DRIVETRAIN_MAX_OUTPUT = 12.0f;
 	public static int DRIVETRAIN_LEFT_A_TALON_DEVICE_ID = 1;
 	public static int DRIVETRAIN_LEFT_B_TALON_DEVICE_ID = 2;
 	public static int DRIVETRAIN_LEFT_C_TALON_DEVICE_ID = 3;
