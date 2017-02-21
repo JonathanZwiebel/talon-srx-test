@@ -1,5 +1,7 @@
 package org.usfirst.frc.team8.robot;
 
+//import org.usfirst.frc.team8.robot.vision.AndroidConnectionHelper;
+
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
@@ -37,11 +39,20 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		Robot.table = NetworkTable.getTable("data_table");
 		Robot.dashboardTable = NetworkTable.getTable("RobotTable");
+		//AndroidConnectionHelper.getInstance().start(false, AndroidConnectionHelper.StreamState.JSON);
+		//AndroidConnectionHelper.getInstance().StartVisionApp();
 		System.out.println("Robot Init");
 	}
 
 	@Override
 	public void autonomousInit() {
+		try {
+			table.putString("start", "true");
+			table.putString("end", "false");
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 		steik_drivetrain.init();
 		steik_drivetrain.autoInit();
 	}

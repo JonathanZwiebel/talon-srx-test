@@ -14,8 +14,11 @@ import edu.wpi.first.wpilibj.Joystick;
  *
  */
 public class SteikSlider {
-	public static final int RIGHT_POT_POS = 2172;
-	public static final int LEFT_POT_POS = 3452;
+	// Aegir: 2172 RIGHT  |  3452 LEFT
+	// Vali: 2036 RIGHT | 3314 LEFT
+	
+	public static final int RIGHT_POT_POS = 2036;
+	public static final int LEFT_POT_POS = 3314;
 	public static final float CENTER_POT_POS = (RIGHT_POT_POS + LEFT_POT_POS) / 2;
 	
 	// Revolutions with 0 as the center
@@ -23,7 +26,7 @@ public class SteikSlider {
 	public static final float LEFT_SCORING_POS = -1.0f;
 	public static final float RIGHT_SCORING_POS = +1.0f;
 	
-	public static final int TOLERANCE = 20;
+	public static final int TOLERANCE = 40;
 	
 	AnalogInput potentiometer;
 	CANTalon talon;
@@ -41,15 +44,17 @@ public class SteikSlider {
 	
 	public void init() {		
 		// Reset and turn on the Talon 
-		talon.reset();
+		//talon.reset();
 		talon.clearStickyFaults();
 		talon.enable();
 		talon.enableControl();
 		
+		
 		// Limit the Talon output
 		talon.configMaxOutputVoltage(SteikConstants.SLIDER_MAX_OUTPUT);
-		talon.configPeakOutputVoltage(SteikConstants.SLIDER_MAX_OUTPUT, -SteikConstants.SLIDER_MAX_OUTPUT);
+		talon.configPeakOutputVoltage(+4.0f, -4.0f);
 		talon.setVoltageRampRate(Integer.MAX_VALUE);
+		
 
 		// Set up the Talon to read from a relative CTRE mag encoder sensor
 		talon.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Absolute);	
@@ -164,13 +169,13 @@ public class SteikSlider {
 	}
 	
 	public void printData() {	
-//		System.out.println("Slider getSetpoint(): " + talon.getSetpoint());
+		System.out.println("Slider getSetpoint(): " + talon.getSetpoint());
 //		System.out.println("Slider getPulseWidthPosition() : " + talon.getPulseWidthPosition());
-//		System.out.println("Slider getEncPosition() : " + talon.getEncPosition());
-//		System.out.println("Slider getPositon(): " + talon.getPosition());
+		System.out.println("Slider getEncPosition() : " + talon.getEncPosition());
+		System.out.println("Slider getPositon(): " + talon.getPosition());
 //		System.out.println("Slider getEncVelocity() (Native Unit - Tics per Min): " + talon.getEncVelocity());
-//		System.out.println("Slider getOutputVoltage() : " + talon.getOutputVoltage());
-//		System.out.println("Slider Speed (RPM): " + talon.getSpeed());
+		System.out.println("Slider getOutputVoltage() : " + talon.getOutputVoltage());
+		System.out.println("Slider Speed (RPM): " + talon.getSpeed());
 //		System.out.println("Slider Adjusted getEncVelocity: " + talon.getEncVelocity() * 600.0f / 4096);
 //		System.out.println("Slider Adjusted getClosedLoopError(): " + talon.getClosedLoopError() * 600.0f / 4096);
 //		System.out.println("Slider Percent Error: " + (talon.getClosedLoopError()) / talon.getSetpoint());
@@ -202,19 +207,19 @@ public class SteikSlider {
 	
 	public void setCenterPositionMode() {
 		talon.changeControlMode(CANTalon.TalonControlMode.Position);
-		talon.setPID(0.8, 0.01, 8, 0, 60, 0, 0);
+		talon.setPID(0.8, 0.0066, 8, 0, 120, 0, 0);
 		talon.set(CENTER_SCORING_POS);
 	}
 	
 	public void setLeftPositionMode() {
 		talon.changeControlMode(CANTalon.TalonControlMode.Position);
-		talon.setPID(0.6, 0.01, 8, 0, 60, 0, 0);
+		talon.setPID(0.8, 0.0066, 8, 0, 120, 0, 0);
 		talon.set(LEFT_SCORING_POS);
 	}
 	
 	public void setRightPositionMode() {
 		talon.changeControlMode(CANTalon.TalonControlMode.Position);
-		talon.setPID(0.6, 0.01, 8, 0, 60, 0, 0);
+		talon.setPID(0.8, 0.0066, 8, 0, 120, 0, 0);
 		talon.set(RIGHT_SCORING_POS);
 	}
 	

@@ -1,6 +1,7 @@
 package org.usfirst.frc.team8.robot;
 
 import com.ctre.CANTalon;
+import com.ctre.CANTalon.StatusFrameRate;
 
 import edu.wpi.first.wpilibj.Joystick;
 
@@ -12,6 +13,13 @@ import edu.wpi.first.wpilibj.Joystick;
  *
  */
 public class SteikDrivetrain {	
+	public static final double NATIVE_UPDATES = 100;														// From documentation
+	public static final double NATIVE_RATE = 1000 / NATIVE_UPDATES;											// Calculated
+	public static final double INCHES_TO_TICKS = 1400 / (2 * 3.1415 * 2);									// 2 very roughly taken from 4" diameter wheels									// Very roughly estimated
+	public static final double INCHES_PER_SECOND_TO_TICKS_PER_SECOND = INCHES_TO_TICKS / NATIVE_RATE;		// Calculated
+
+	String auto_action;
+	
 	CANTalon left_a; // Master
 	CANTalon left_b;
 	CANTalon left_c;
@@ -66,8 +74,6 @@ public class SteikDrivetrain {
 		right_a.set(right_c.getDeviceID());
 		right_b.set(right_c.getDeviceID());
 		
-		left_a.setPosition(0);
-		right_c.setPosition(0);
 
 		left_a.reverseOutput(false);
 		right_c.reverseOutput(true);
@@ -102,30 +108,97 @@ public class SteikDrivetrain {
 	}
 	
 	public void autoInit() {
+		auto_action = "Drive Straight";
+		setupDriveStraight();
+	}
+	
+	public void setupDriveStraight() {
+		left_a.setPosition(0.0f);
+		right_c.setPosition(0.0f);	
+		
 		left_a.changeControlMode(CANTalon.TalonControlMode.Position);
 		right_c.changeControlMode(CANTalon.TalonControlMode.Position);
-		
-		left_a.setCloseLoopRampRate(8.0f);
-		right_c.setCloseLoopRampRate(8.0f);
-		
-		left_a.setVoltageRampRate(8.0f);
-		right_c.setVoltageRampRate(8.0f);
 		
 		left_a.configPeakOutputVoltage(+8.0f, -8.0f);
 		right_c.configPeakOutputVoltage(+8.0f, -8.0f);
 		
-		left_a.setPID(0.4f, 0.02f, 5.0f, 0, 100, 0, 0);
-		right_c.setPID(0.4f, 0.02f, 5.0f, 0, 100, 0, 0);
+		left_a.setPID(0.4f, 0.0025f, 8.0f, 0, 100, 0, 0);
+		right_c.setPID(0.4f, 0.0025f, 8.0f, 0, 100, 0, 0);
 		
 		left_a.set(2800f);
 		right_c.set(2800f);
+		
+		left_a.setStatusFrameRateMs(StatusFrameRate.Feedback, 1);
+		right_c.setStatusFrameRateMs(StatusFrameRate.Feedback, 1);		
+	}
+	
+	public void setupTurnAngle() {
+		left_a.setPosition(0.0f);
+		right_c.setPosition(0.0f);	
+		
+		left_a.changeControlMode(CANTalon.TalonControlMode.Position);
+		right_c.changeControlMode(CANTalon.TalonControlMode.Position);
+		
+		left_a.configPeakOutputVoltage(+8.0f, -8.0f);
+		right_c.configPeakOutputVoltage(+8.0f, -8.0f);
+		
+		left_a.setPID(0.75f, 0.002f, 9.0f, 0.05f, 150, 0, 0);
+		right_c.setPID(0.75f, 0.002f, 9.0f, 0.05f, 150, 0, 0);
+		
+		left_a.set(-400f);
+		right_c.set(400f);
+		
+		left_a.setStatusFrameRateMs(StatusFrameRate.Feedback, 1);
+		right_c.setStatusFrameRateMs(StatusFrameRate.Feedback, 1);		
+	}
+	
+	public void setupDriveEnd() {
+		left_a.setPosition(0.0f);
+		right_c.setPosition(0.0f);	
+		
+		left_a.changeControlMode(CANTalon.TalonControlMode.Position);
+		right_c.changeControlMode(CANTalon.TalonControlMode.Position);
+		
+		left_a.configPeakOutputVoltage(+8.0f, -8.0f);
+		right_c.configPeakOutputVoltage(+8.0f, -8.0f);
+		
+		left_a.setPID(0.4f, 0.0025f, 8.0f, 0, 100, 0, 0);
+		right_c.setPID(0.4f, 0.0025f, 8.0f, 0, 100, 0, 0);
+		
+		left_a.set(800f);
+		right_c.set(800f);
+		
+		left_a.setStatusFrameRateMs(StatusFrameRate.Feedback, 1);
+		right_c.setStatusFrameRateMs(StatusFrameRate.Feedback, 1);		
 	}
 	
 	public void autoUpdate() {
+		switch(auto_action) {
+		case "Drive Straight":
+			if(left_a.getSpeed() == 0 && right_c.getSpeed() == 0 && left_a.getClosedLoopError() <= 20 && right_c.getClosedLoopError() <= 20) {
+				auto_action = "Turn Angle";
+				setupTurnAngle();
+			}
+			break;
+		case "Turn Angle":
+			if(left_a.getSpeed() <= 10 && right_c.getSpeed() <= 10 && left_a.getClosedLoopError() <= 100 && right_c.getClosedLoopError() <= 100) {
+				auto_action = "Drive End";
+				setupDriveEnd();
+			}
+			break;
+		case "Drive End":
+			break;
+		default:
+			System.out.println("Illegal auto action");
+			System.exit(1);
+			break;
+		}
+		
 		System.out.println("Left Drivetrain Position: " + left_a.getPosition());
 		System.out.println("Right Drivetrain Positon: " + right_c.getPosition());
 		System.out.println("Left Drivetrain Speed: " + left_a.getSpeed());
 		System.out.println("Right Drivtrain Speed: " + right_c.getSpeed());
+		Robot.table.putString("status", left_a.getOutputVoltage() + "," + right_c.getOutputVoltage() + "," + left_a.getPosition() + "," + right_c.getPosition() + "," + left_a.getSpeed() + "," + right_c.getSpeed() + "," + left_a.getClosedLoopError() + "," + right_c.getClosedLoopError() + "\n");
 		updateTable();
 	}
 	

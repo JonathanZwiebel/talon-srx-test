@@ -8,7 +8,7 @@ package org.usfirst.frc.team8.robot;
 public class CheeseSteikDrive {
 	public static final float hg_sensitivity = 0.85f; // Originally 0.85
 	public static final float qs_alpha = 0.3f; // Originally 0.3
-	public static final float qs_change_value = 0.25f; // Originally 1.0
+	public static final float qs_change_value = 0.5f; // Originally 1.0
 	
 	private double mOldWheel, mQuickStopAccumulator;
 	private final double kWheelStickDeadband = 0.01;

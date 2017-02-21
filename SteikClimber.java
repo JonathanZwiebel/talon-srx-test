@@ -36,11 +36,14 @@ public class SteikClimber {
 	
 	public void update() {
 		float output = - (float) stick.getY() * SteikConstants.CLIMBER_MAX_OUTPUT;
+		if(Math.abs(output) < 0.15f) {
+			output = 0.0f;
+		}
 		talon.set(output);
 		
 		//System.out.println("Climber Talon Voltage: " + talon.getOutputVoltage());
-		//System.out.println("Climber Talon Speed: " + talon.getSpeed());
-		//System.out.println("Climber Talon Current: " + talon.getOutputCurrent());
+		System.out.println("Climber Talon Speed: " + talon.getSpeed());
+		System.out.println("Climber Talon Current: " + talon.getOutputCurrent());
 		//System.out.println("Climber PDP Current: " + pdp.getCurrent(SteikConstants.CLIMBER_PDP_PORT));
 	}
 }

@@ -19,7 +19,7 @@ public class Drivetrain {
 	
 	public static final double NATIVE_UPDATES = 100;														// From documentation
 	public static final double NATIVE_RATE = 1000 / NATIVE_UPDATES;											// Calculated
-	public static final double INCHES_TO_TICKS = 1400 / (2 * 3.1415 * 3.5);									// 3.5 very roughly taken from 7" diameter wheels
+	public static final double INCHES_TO_TICKS = 1400 / (2 * 3.1415 * 3.5);									// 2 very roughly taken from 4" diameter wheels
 	public static final double INCHES_TO_DEGREES = 42 / 180.0;												// Very roughly estimated
 	public static final double INCHES_PER_SECOND_TO_TICKS_PER_SECOND = INCHES_TO_TICKS / NATIVE_RATE;		// Calculated
 	

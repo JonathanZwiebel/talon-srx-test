@@ -15,7 +15,7 @@ public class SteikConstants {
 	public static int DRIVETRAIN_RIGHT_C_TALON_DEVICE_ID = 6;
 
 	
-	public static float SLIDER_MAX_OUTPUT = 4.0f;
+	public static float SLIDER_MAX_OUTPUT = 6.0f;
 	public static int SLIDER_TALON_DEVICE_ID = 10;
 	public static int SLIDER_POTENTIOMETER_PORT = 3;
 	
