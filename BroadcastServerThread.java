@@ -197,6 +197,7 @@ public class BroadcastServerThread implements Runnable{
                     break;
 
 				case RECEIVING:
+					//System.out.println("BST in receiving state");
                     break;
             }
         }
@@ -214,13 +215,17 @@ public class BroadcastServerThread implements Runnable{
         StringBuilder builder = new StringBuilder();
 
         try{
+        	System.out.println("Accepting client");
         	// Accept client, then form into a readable object
             Socket client = s_server.accept();
+            System.out.println("Client accepted");
 			BufferedReader client_reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
 			// Read the data
 			String input;
+			
 			while((input = client_reader.readLine()) != null){
+				System.out.println("Appending input");
 				builder.append(input);
 			}
 

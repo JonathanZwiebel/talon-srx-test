@@ -17,8 +17,8 @@ public class SteikSlider {
 	// Aegir: 2172 RIGHT  |  3452 LEFT
 	// Vali: 2036 RIGHT | 3314 LEFT
 	
-	public static final int RIGHT_POT_POS = 2036;
-	public static final int LEFT_POT_POS = 3314;
+	public static final int RIGHT_POT_POS = 2172;
+	public static final int LEFT_POT_POS = 3452;
 	public static final float CENTER_POT_POS = (RIGHT_POT_POS + LEFT_POT_POS) / 2;
 	
 	// Revolutions with 0 as the center
@@ -93,7 +93,7 @@ public class SteikSlider {
 	
 	public void update() {
 		printData();
-		logData();
+//		logData();
 		
 		if(stick.getRawButton(2)) {
 			mode = "Human";
@@ -102,23 +102,27 @@ public class SteikSlider {
 		
 		switch(mode) {
 		case "Velocity":
+			talon.set(0.0f);
 			break;
 		case "Constant":
 			talon.set(0.0f);
 			break;
 		case "Center Position":
+			talon.set(CENTER_SCORING_POS);
 			if(positionLoopDone()) {
 				mode = "Human";
 				setHumanMode();
 			}
 			break;
 		case "Left Position":
+			talon.set(LEFT_SCORING_POS);
 			if(positionLoopDone()) {
 				mode = "Human";
 				setHumanMode();
 			}
 			break;
 		case "Right Position":
+			talon.set(RIGHT_SCORING_POS);
 			if(positionLoopDone()) {
 				mode = "Human";
 				setHumanMode();
@@ -198,7 +202,6 @@ public class SteikSlider {
 	public void setVelocityMode() {
 		talon.changeControlMode(CANTalon.TalonControlMode.Speed);
 		talon.setPID(0, 0, 0, 0, 0, 0, 0);
-		talon.set(0.0f);
 	}
 	
 	public void setConstantMode() {
@@ -208,19 +211,16 @@ public class SteikSlider {
 	public void setCenterPositionMode() {
 		talon.changeControlMode(CANTalon.TalonControlMode.Position);
 		talon.setPID(0.8, 0.0066, 8, 0, 120, 0, 0);
-		talon.set(CENTER_SCORING_POS);
 	}
 	
 	public void setLeftPositionMode() {
 		talon.changeControlMode(CANTalon.TalonControlMode.Position);
 		talon.setPID(0.8, 0.0066, 8, 0, 120, 0, 0);
-		talon.set(LEFT_SCORING_POS);
 	}
 	
 	public void setRightPositionMode() {
 		talon.changeControlMode(CANTalon.TalonControlMode.Position);
 		talon.setPID(0.8, 0.0066, 8, 0, 120, 0, 0);
-		talon.set(RIGHT_SCORING_POS);
 	}
 	
 	public void setHumanMode() {

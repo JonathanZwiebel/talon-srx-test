@@ -209,11 +209,13 @@ public class AndroidConnectionHelper implements Runnable{
 			try {    // RIOadb.init() possible error is not being handled, sketchily fix later
 				// Initializes RIOdroid usb and RIOadb adb daemon
 				if(!this.mTesting) {
+					System.out.println("Step 1");
 					RIOdroid.init();
 
 					if(s_streamState.equals(StreamState.BROADCAST)){
 
 						// Forward the port and start the server socket
+						System.out.println("Step 2");
 						RIOdroid.executeCommand("adb reverse tcp:" +
 								Constants.kAndroidServerSocketPort + " tcp:" +
 								Constants.kAndroidServerSocketPort);
@@ -319,6 +321,12 @@ public class AndroidConnectionHelper implements Runnable{
 		if(connected) {
 			s_visionRunning = true;
 			System.out.println("Starting Vision Stream");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return ConnectionState.STREAMING;
 		} else {
 			return s_connectionState;
@@ -356,18 +364,25 @@ public class AndroidConnectionHelper implements Runnable{
 	 * receiving the output data through a socket
 	 */
 	private void StreamBroadcast(){
+		System.out.println("Stream broadcast");
 		BroadcastServerThread.getInstance().AwaitClient();
 
 		// Broadcast an Intent to the app signaling the call to get data
-		if(!mTesting){
+		/*if(!mTesting){
+			System.out.println("Execute command");
 			RIOdroid.executeCommand("adb shell am broadcast -a "+Constants.kPackageName+".GET_DATA --es filler text");
 		}else{
 			AdbComputerBridge.getInstance().exec("adb shell am broadcast -a "+Constants.kPackageName+".GET_DATA --es filler text");
-		}
+		}*/
+		
+		System.out.println("Dammit");
+		AdbComputerBridge.getInstance().exec("adb shell am broadcast -a "+Constants.kPackageName+".GET_DATA --es filler text");
 
+		System.out.println("Awaiting output");
 		// Receive data from android client
 		String raw_data = BroadcastServerThread.getInstance().AwaitOutput();
 
+		System.out.println("Parsing JSON");
 		parseJSON(raw_data);
 	}
 
@@ -376,17 +391,23 @@ public class AndroidConnectionHelper implements Runnable{
 	 * data written to it
 	 */
 	private void StreamJSON(){
+		System.out.println("Sreaming vision as JSON");
 		String raw_data;
 
 		// Read the JSON file which stores the vision data
 		if(!this.mTesting){
+			System.out.println("adb shell run-as "+Constants.kPackageName+" cat /data/data/"+ Constants.kPackageName
+					+ "/files/data.json");
 			raw_data = RIOdroid.executeCommand("adb shell run-as "+Constants.kPackageName+" cat /data/data/"+ Constants.kPackageName
 					+ "/files/data.json");
+			/*System.out.println(RIOdroid.executeCommand("adb shell run-as "+Constants.kPackageName+" cat /data/data/"+ Constants.kPackageName
+					+ "/files/data.json"));*/
 		}else{
 			raw_data = AdbComputerBridge.getInstance().exec("adb shell run-as "+Constants.kPackageName+" cat /data/data/"+ Constants.kPackageName
 					+ "/files/data.json");
 		}
 
+		System.out.println("Parsing");
 		parseJSON(raw_data);
 	}
 
@@ -412,6 +433,7 @@ public class AndroidConnectionHelper implements Runnable{
 
 		// Compute based on app state (given in the data)
 		if(json != null){
+			System.out.println("parsing");
 			String state = (String) json.get("state");
 			if(!(state == null) && !state.equals("")){	// Handle based on state
 				switch(state){
@@ -419,7 +441,8 @@ public class AndroidConnectionHelper implements Runnable{
 					// Get image data
 					String data_s = ((String) json.get("image_rgb"));
 
-					System.out.println("data" + data_s);
+					System.out.println("streaming");
+					//System.out.println("data" + data_s);
 					// Convert image data to bytes
 					if(!(data_s == null || data_s.equals(""))) {
 //						s_imageData  = DatatypeConverter.parseBase64Binary(data_s);
@@ -427,22 +450,22 @@ public class AndroidConnectionHelper implements Runnable{
 						
 					}
 					break;
-//
-//				case "PAUSED":
-//					System.out.println("Vision Paused");
-//					break;
-//
-//				case "TERMINATED":
-//					System.out.println("Vision Terminated");
-//					break;
-//
-//				case "STARTUP":
-//					System.out.println("Vision Starting Up");
-//					break;
-//
-//				default:
-//					System.out.println("WHAT");
-//					break;
+
+				case "PAUSED":
+					System.out.println("Vision Paused");
+					break;
+
+				case "TERMINATED":
+					System.out.println("Vision Terminated");
+					break;
+
+				case "STARTUP":
+					System.out.println("Vision Starting Up");
+					break;
+
+				default:
+					System.out.println("WHAT");
+					break;
 				}
 			}
 		}
@@ -454,6 +477,7 @@ public class AndroidConnectionHelper implements Runnable{
 	@Override
 	public void run() {
 		while(s_running){
+			System.out.println(s_connectionState.name());
 			ConnectionState initState = s_connectionState;
 			switch(s_connectionState){
 

@@ -66,13 +66,17 @@ public class AdbComputerBridge {
 			String line;
 
 			// Execute the command as a process
+			System.out.println("Execing");
 			Process p = Runtime.getRuntime().exec(command);
+			System.out.println("You probably won't see this");
 
 			// Read in console output from the process object
 			BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			while ((line = input.readLine()) != null) {
+				System.out.println("Getting line");
 				out.append(line+"\n");
 			}
+			System.out.println("Finished getting lines");
 			input.close();
 		} catch (IOException e) {
 			e.printStackTrace();

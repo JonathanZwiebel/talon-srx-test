@@ -13,14 +13,12 @@ import edu.wpi.first.wpilibj.PowerDistributionPanel;
  * @author Jonathan Zwiebel (frc8)
  *
  */
-public class SteikDrivetrain {	
+public class SteikDrivetrainTune {	
 	public static final double NATIVE_UPDATES = 100;														// From documentation
 	public static final double NATIVE_RATE = 1000 / NATIVE_UPDATES;											// Calculated
-	public static final double INCHES_TO_TICKS = 1440 / (2 * 3.1415 * 2);									// 2 very roughly taken from 4" diameter wheels									// Very roughly estimated
-	public static final double INCHES_PER_SECOND_TO_TICKS_PER_SECOND = INCHES_TO_TICKS / NATIVE_RATE;		// Calculated
+	public static final double TICKS_PER_INCH = 360 / (3.95 * 3.1415);										// 3.95" wheels	
+	public static final double SPEED_UNIT_CONVERSION = TICKS_PER_INCH / NATIVE_RATE;		// Calculated
 
-	String auto_action;
-	
 	CANTalon left_a; // Master
 	CANTalon left_b;
 	CANTalon left_c;
@@ -30,14 +28,11 @@ public class SteikDrivetrain {
 	Robot robot;
 	
 	Joystick drive_stick;
-	Joystick turn_stick;
-	
-	CheeseSteikDrive csd;
-	
+	Joystick turn_stick;	
 	
 	PowerDistributionPanel pdp = new PowerDistributionPanel();
 	
-	public SteikDrivetrain(Robot robot) {
+	public SteikDrivetrainTune(Robot robot) {
 		this.robot = robot;
 		left_a = new CANTalon(SteikConstants.DRIVETRAIN_LEFT_A_TALON_DEVICE_ID);
 		left_b = new CANTalon(SteikConstants.DRIVETRAIN_LEFT_B_TALON_DEVICE_ID);
@@ -47,7 +42,6 @@ public class SteikDrivetrain {
 		right_c = new CANTalon(SteikConstants.DRIVETRAIN_RIGHT_C_TALON_DEVICE_ID);
 		drive_stick = new Joystick(SteikConstants.DRIVE_STICK_PORT);
 		turn_stick = new Joystick(SteikConstants.TURN_STICK_PORT);
-		csd = new CheeseSteikDrive();
 		
 		left_a.configMaxOutputVoltage(+12.0f);
 		left_b.configMaxOutputVoltage(+12.0f);
@@ -58,8 +52,8 @@ public class SteikDrivetrain {
 	}
 	
 	public void init() {
-		left_a.configPeakOutputVoltage(+12.0f, -12.0f);
-		right_c.configPeakOutputVoltage(+12.0f, -12.0f);
+		left_a.configPeakOutputVoltage(+8.0f, -8.0f);
+		right_c.configPeakOutputVoltage(+8.0f, -8.0f);
 
 		left_a.setCloseLoopRampRate(Integer.MAX_VALUE);
 		right_c.setCloseLoopRampRate(Integer.MAX_VALUE);
@@ -95,37 +89,46 @@ public class SteikDrivetrain {
 		left_a.reverseSensor(false);
 		right_c.reverseSensor(true);
 		
-		left_a.setStatusFrameRateMs(StatusFrameRate.Feedback, 100);
-		right_c.setStatusFrameRateMs(StatusFrameRate.Feedback, 100);
+		left_a.setStatusFrameRateMs(StatusFrameRate.Feedback, 1);
+		right_c.setStatusFrameRateMs(StatusFrameRate.Feedback, 1);
+		
+		//left_a.setPID(0.5, 0.0025, 12.0, 0, 125, 0, 0);
+		//right_c.setPID(0.5, 0.0025, 12.0, 0, 125, 0, 0);
+		//left_a.changeControlMode(CANTalon.TalonControlMode.Position);
+		//right_c.changeControlMode(CANTalon.TalonControlMode.Position);
+		//left_a.set(120 * TICKS_PER_INCH);
+		//right_c.set(120 * TICKS_PER_INCH);
+		
+//		left_a.setPID(6.0, 0.002, 85, 2.624, 800, 0, 0);
+//		right_c.setPID(6.0, 0.002, 85, 2.624, 800, 0, 0);
+//		left_a.changeControlMode(CANTalon.TalonControlMode.Speed);
+//		right_c.changeControlMode(CANTalon.TalonControlMode.Speed);
+//		left_a.set(-24 * SPEED_UNIT_CONVERSION);
+//		right_c.set(24 * SPEED_UNIT_CONVERSION);
+		
+		left_a.setPID(9.0, 0.008, 100, 2.924, 25, 0, 0);
+		right_c.setPID(9.0, 0.008, 100, 2.924, 25, 0, 0);
+		left_a.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
+		right_c.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
+		left_a.setMotionMagicAcceleration(200 * SPEED_UNIT_CONVERSION);
+		right_c.setMotionMagicAcceleration(200* SPEED_UNIT_CONVERSION);
+		left_a.setMotionMagicCruiseVelocity(96 * SPEED_UNIT_CONVERSION);
+		right_c.setMotionMagicCruiseVelocity(96 * SPEED_UNIT_CONVERSION);
+		
+		left_a.set(-150 * TICKS_PER_INCH);
+		right_c.set(-150 * TICKS_PER_INCH);
 	}
 	
 	public void update() {
-		csd.update(-drive_stick.getY(), turn_stick.getX(), turn_stick.getRawButton(1), true);
-		
-		float left_power = (float) csd.left_power;
-		float right_power = (float) csd.right_power;
-		
-		left_power = Math.max(Math.min(left_power, SteikConstants.DRIVETRAIN_MAX_OUTPUT), -SteikConstants.DRIVETRAIN_MAX_OUTPUT);
-		right_power = Math.max(Math.min(right_power, SteikConstants.DRIVETRAIN_MAX_OUTPUT), -SteikConstants.DRIVETRAIN_MAX_OUTPUT);
-		
-		left_a.set(left_power);
-		right_c.set(right_power);
-		
-		
 //		System.out.println("Left Drivetrain Voltage: " + left_a.getOutputVoltage());
 //		System.out.println("Right Drivetrain Voltage: " + right_a.getOutputVoltage());
-		System.out.println("Left Drivetrain Position: " + left_a.getPosition());
-		System.out.println("Right Drivetrain Positon: " + right_c.getPosition());
-		System.out.println("Left Drivetrain Speed: " + left_a.getSpeed());
-		System.out.println("Right Drivtrain Speed: " + right_c.getSpeed());
+		System.out.println("Left Drivetrain Position: " + left_a.getPosition() / TICKS_PER_INCH);
+		System.out.println("Right Drivetrain Positon: " + right_c.getPosition() / TICKS_PER_INCH);
+		System.out.println("Left Drivtrain Speed: " + left_a.getSpeed() / SPEED_UNIT_CONVERSION);
+		System.out.println("Right Drivtrain Speed: " + right_c.getSpeed() / SPEED_UNIT_CONVERSION);
 		
-		Robot.table.putString("status", 12 + "," + left_a.getOutputCurrent() + "," + left_b.getOutputCurrent() + "," + left_c.getOutputCurrent()  + "," + -right_a.getOutputCurrent()  + "," + -right_b.getOutputCurrent()  + "," + -right_c.getOutputCurrent() + "\n");
+		Robot.table.putString("status", left_a.getOutputVoltage() + "," + right_c.getOutputVoltage() + "," + left_a.getPosition()  + "," + right_c.getPosition() + "," + left_a.getSpeed()  + "," + right_c.getSpeed() + "," + left_a.getClosedLoopError()  + "," + right_c.getClosedLoopError() + "\n");
 		updateTable();
-	}
-	
-	public void autoInit() {
-		auto_action = "Drive Straight";
-		setupVelocityHold();
 	}
 	
 	public void setupDriveStraight() {
@@ -225,43 +228,8 @@ public class SteikDrivetrain {
 		}
 	}
 	
-	public void autoUpdate() {
-		switch(auto_action) {
-		case "Drive Straight":
-			left_a.set(2800f);
-			right_c.set(2800f);
-			if(left_a.getSpeed() == 0 && right_c.getSpeed() == 0 && left_a.getClosedLoopError() <= 20 && right_c.getClosedLoopError() <= 20) {
-				auto_action = "Turn Angle";
-				setupTurnAngle();
-			}
-			break;
-		case "Turn Angle":
-			left_a.set(-400f);
-			right_c.set(400f);
-			if(left_a.getSpeed() <= 10 && right_c.getSpeed() <= 10 && left_a.getClosedLoopError() <= 100 && right_c.getClosedLoopError() <= 100) {
-				auto_action = "Drive End";
-				setupDriveEnd();
-			}
-			break;
-		case "Drive End":
-			left_a.set(800f);
-			right_c.set(800f);
-			break;
-		case "Velocity Hold":
-			left_a.set(INCHES_PER_SECOND_TO_TICKS_PER_SECOND * 24.0f);
-			right_c.set(INCHES_PER_SECOND_TO_TICKS_PER_SECOND * 24.0f);
-			break;
-		default:
-			System.out.println("Illegal auto action");
-			System.exit(1);
-			break;
-		}
+	public void disabledInit() {
 		
-		System.out.println("Left Drivetrain Position: " + left_a.getPosition());
-		System.out.println("Right Drivetrain Positon: " + right_c.getPosition());
-		System.out.println("Left Drivetrain Speed: " + left_a.getSpeed());
-		System.out.println("Right Drivtrain Speed: " + right_c.getSpeed());
-		updateTable();
 	}
 	
 	public void updateTable() {
