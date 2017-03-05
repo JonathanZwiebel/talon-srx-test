@@ -17,8 +17,9 @@ public class SteikDrivetrainTune {
 	public static final double NATIVE_UPDATES = 100;														// From documentation
 	public static final double NATIVE_RATE = 1000 / NATIVE_UPDATES;											// Calculated
 	public static final double TICKS_PER_INCH = 360 / (3.95 * 3.1415);										// 3.95" wheels	
-	public static final double SPEED_UNIT_CONVERSION = TICKS_PER_INCH / NATIVE_RATE;		// Calculated
-
+	public static final double SPEED_UNIT_CONVERSION = TICKS_PER_INCH / NATIVE_RATE;						// Calculated
+	public static final double INCHES_PER_DEGREE = 21.5f / 90.0f;											// Measured
+	
 	CANTalon left_a; // Master
 	CANTalon left_b;
 	CANTalon left_c;
@@ -52,8 +53,6 @@ public class SteikDrivetrainTune {
 	}
 	
 	public void init() {
-		left_a.configPeakOutputVoltage(+8.0f, -8.0f);
-		right_c.configPeakOutputVoltage(+8.0f, -8.0f);
 
 		left_a.setCloseLoopRampRate(Integer.MAX_VALUE);
 		right_c.setCloseLoopRampRate(Integer.MAX_VALUE);
@@ -91,32 +90,82 @@ public class SteikDrivetrainTune {
 		
 		left_a.setStatusFrameRateMs(StatusFrameRate.Feedback, 1);
 		right_c.setStatusFrameRateMs(StatusFrameRate.Feedback, 1);
+
+		left_a.configPeakOutputVoltage(+8.0f, -8.0f);
+		right_c.configPeakOutputVoltage(+8.0f, -8.0f);
 		
-		//left_a.setPID(0.5, 0.0025, 12.0, 0, 125, 0, 0);
-		//right_c.setPID(0.5, 0.0025, 12.0, 0, 125, 0, 0);
-		//left_a.changeControlMode(CANTalon.TalonControlMode.Position);
-		//right_c.changeControlMode(CANTalon.TalonControlMode.Position);
-		//left_a.set(120 * TICKS_PER_INCH);
-		//right_c.set(120 * TICKS_PER_INCH);
+		// GENERAL CLOSED-LOOP
+		// MAX_OUTPUT = 8.0
+		// MIN_OUTPUT = -8.0
+		
+		// POSITION
+		// P = 0.5
+		// I = 0.0025
+		// D = 12.0
+		// F = 0
+		// Izone = 125
+		
+		// VELOCITY
+		// P = 6.0
+		// I = 0.002
+		// D = 85
+		// F = 2.624
+		// Izone = 800
+		
+		// STRAIGHT MOTION PROFILE
+		// P = 4.5
+		// I = 0.01
+		// D = 150
+		// F = 2.5
+		// Izone = 25
+		// Acceleration = 36 in/s^2
+		// Cruise Velocity = 36 in/s
+		
+		// TURNING MOTION PROFILE
+		// P = 4.5
+		// I = 0.01
+		// D = 150
+		// F = 2.5
+		// Izone = 25
+		// Acceleration = 144 in/s^2
+		// Cruise Velocity = 72 in/s
+		// Clockwise is left positive and right negative
+		
+//		left_a.setPID(0.5, 0.0025, 12.0, 0, 125, 0, 0);
+//		right_c.setPID(0.5, 0.0025, 12.0, 0, 125, 0, 0);
+//		left_a.changeControlMode(CANTalon.TalonControlMode.Position);
+//		right_c.changeControlMode(CANTalon.TalonControlMode.Position);
+//		left_a.set(120 * TICKS_PER_INCH);
+//		right_c.set(120 * TICKS_PER_INCH);
 		
 //		left_a.setPID(6.0, 0.002, 85, 2.624, 800, 0, 0);
 //		right_c.setPID(6.0, 0.002, 85, 2.624, 800, 0, 0);
-//		left_a.changeControlMode(CANTalon.TalonControlMode.Speed);
+//		left_a.chaeControlMode(CANTalon.TalonControlMode.Speed);
 //		right_c.changeControlMode(CANTalon.TalonControlMode.Speed);
 //		left_a.set(-24 * SPEED_UNIT_CONVERSION);
 //		right_c.set(24 * SPEED_UNIT_CONVERSION);
 		
-		left_a.setPID(9.0, 0.008, 100, 2.924, 25, 0, 0);
-		right_c.setPID(9.0, 0.008, 100, 2.924, 25, 0, 0);
-		left_a.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
-		right_c.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
-		left_a.setMotionMagicAcceleration(200 * SPEED_UNIT_CONVERSION);
-		right_c.setMotionMagicAcceleration(200* SPEED_UNIT_CONVERSION);
-		left_a.setMotionMagicCruiseVelocity(96 * SPEED_UNIT_CONVERSION);
-		right_c.setMotionMagicCruiseVelocity(96 * SPEED_UNIT_CONVERSION);
-		
-		left_a.set(-150 * TICKS_PER_INCH);
-		right_c.set(-150 * TICKS_PER_INCH);
+//		left_a.setPID(4.5, 0.01, 150, 2.5, 25, 0, 0);
+//		right_c.setPID(4.5, 0.01, 150, 2.5, 25, 0, 0);
+//		left_a.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
+//		right_c.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
+//		left_a.setMotionMagicAcceleration(36 * SPEED_UNIT_CONVERSION);
+//		right_c.setMotionMagicAcceleration(36* SPEED_UNIT_CONVERSION);
+//		left_a.setMotionMagicCruiseVelocity(36 * SPEED_UNIT_CONVERSION);
+//		right_c.setMotionMagicCruiseVelocity(36 * SPEED_UNIT_CONVERSION);
+//		left_a.set(180 * TICKS_PER_INCH);
+//		right_c.set(180 * TICKS_PER_INCH);
+	
+//		left_a.setPID(4.5, 0.01, 150, 2.5, 25, 0, 0);
+//		right_c.setPID(4.5, 0.01, 150, 2.5, 25, 0, 0);
+//		left_a.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
+//		right_c.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
+//		left_a.setMotionMagicAcceleration(144 * SPEED_UNIT_CONVERSION);
+//		right_c.setMotionMagicAcceleration(144 * SPEED_UNIT_CONVERSION);
+//		left_a.setMotionMagicCruiseVelocity(72 * SPEED_UNIT_CONVERSION);
+//		right_c.setMotionMagicCruiseVelocity(72 * SPEED_UNIT_CONVERSION);		
+//		left_a.set(360 * INCHES_PER_DEGREE * TICKS_PER_INCH);
+//		right_c.set(360 * -INCHES_PER_DEGREE * TICKS_PER_INCH);
 	}
 	
 	public void update() {
